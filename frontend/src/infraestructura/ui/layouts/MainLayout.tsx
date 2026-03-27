@@ -1,0 +1,32 @@
+import { Outlet } from 'react-router-dom';
+import { cn } from '@/compartidos/utilidades';
+import { useUIStore } from '@/infraestructura/store/useUIStore';
+import Sidebar from './Sidebar';
+import Header from './Header';
+
+// ═══════════════════════════════════════════════════════════
+// MainLayout — sidebar + header + contenido principal
+// ═══════════════════════════════════════════════════════════
+
+export default function MainLayout() {
+  const { sidebarCollapsed } = useUIStore();
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <Sidebar />
+      <div
+        className={cn(
+          'transition-all duration-300',
+          sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-64',
+        )}
+      >
+        <Header />
+        <main className="p-4 lg:p-6">
+          <div className="mx-auto max-w-7xl page-enter">
+            <Outlet />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

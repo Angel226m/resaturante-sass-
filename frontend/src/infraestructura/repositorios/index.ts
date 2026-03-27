@@ -1,0 +1,10 @@
+export { authRepository } from './RepoAuthHttp';
+export { localRepository } from './RepoLocalHttp';
+export { menuRepository } from './RepoMenuHttp';
+export { ordenesRepository } from './RepoOrdenesHttp';
+export { cajaRepository } from './RepoCajaHttp';
+export { clientesRepository } from './RepoClientesHttp';
+export { reservasRepository } from './RepoReservasHttp';
+export { deliveryRepository } from './RepoDeliveryHttp';
+export { reportesRepository } from './RepoReportesHttp';
+export { plataformaRepository } from './RepoPlataformaHttp';

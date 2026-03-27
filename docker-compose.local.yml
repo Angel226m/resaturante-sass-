@@ -1,0 +1,74 @@
+# ==========================================
+# RestauFlow SaaS — Docker Compose LOCAL
+# Sin nginx, puertos expuestos directamente
+# ==========================================
+
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: restauflow-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: restauflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d restauflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: restauflow-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: restauflow-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ENV: development
+      GIN_MODE: debug
+      SERVER_PORT: "8080"
+      SERVER_HOST: "0.0.0.0"
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: restauflow
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ""
+      CORS_ORIGIN: "http://localhost:5173"
+      JWT_SECRET: "dev-jwt-secret-restauflow-2024-cambiar-en-produccion"
+      JWT_REFRESH_SECRET: "dev-jwt-refresh-secret-restauflow-2024-cambiar"
+      ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef"
+      ENABLE_WEBSOCKETS: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
