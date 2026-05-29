@@ -86,7 +86,7 @@ interface AuthState {
   isLoading: boolean;
   isDemoMode: boolean;
 
-  login: (email: string, password: string, tenant_slug: string) => Promise<void>;
+  login: (email: string, password: string, tenant_slug: string, rememberMe?: boolean) => Promise<void>;
   loginPin: (tenant_slug: string, pin: string) => Promise<void>;
   loginSuperAdmin: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -104,7 +104,7 @@ export const useAuthStore = create<AuthState>()(
       isLoading: true,
       isDemoMode: false,
 
-      login: async (email, password, _tenant_slug) => {
+      login: async (email, password, _tenant_slug, rememberMe) => {
         // Check demo credentials first (no API call)
         const demoUser = isDemoLogin(email, password);
         if (demoUser) {
@@ -112,7 +112,7 @@ export const useAuthStore = create<AuthState>()(
           return;
         }
         // Real API call
-        await authRepository.login({ correo: email, contrasena: password });
+        await authRepository.login({ correo: email, contrasena: password, remember_me: rememberMe ?? false });
         const perfil = await authRepository.miPerfil();
         set({ usuario: perfil, isAuthenticated: true, isSuperAdmin: false, isDemoMode: false });
       },

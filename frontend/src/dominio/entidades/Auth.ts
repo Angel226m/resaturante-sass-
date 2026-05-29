@@ -20,7 +20,7 @@ export interface Usuario {
 export interface LoginRequest {
   correo: string;
   contrasena: string;
-  recordar_me?: boolean;
+  remember_me?: boolean;
 }
 
 export interface LoginResponse {

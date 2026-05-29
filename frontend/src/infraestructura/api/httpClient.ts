@@ -2,7 +2,7 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import type { ApiResponse } from '@/dominio/entidades';
 
 // ═══════════════════════════════════════════════════════════
-// HTTP Client — Axios with JWT cookie interceptors
+// HTTP Client — Axios with JWT cookie interceptors + security
 // ═══════════════════════════════════════════════════════════
 
 const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
@@ -11,11 +11,23 @@ export const httpClient = axios.create({
   baseURL: API_URL,
   timeout: 15000,
   withCredentials: true,
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',  // CSRF protection: marks as AJAX
+  },
+  xsrfCookieName: 'csrf_token',
+  xsrfHeaderName: 'X-CSRF-Token',
 });
 
+// ── Request interceptor: security headers ──
 httpClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => config,
+  (config: InternalAxiosRequestConfig) => {
+    // Prevent open redirect via baseURL manipulation
+    if (config.url && /^https?:\/\//i.test(config.url)) {
+      return Promise.reject(new Error('Absolute URLs are not allowed'));
+    }
+    return config;
+  },
   (error: AxiosError) => Promise.reject(error),
 );
 
@@ -46,7 +58,11 @@ httpClient.interceptors.response.use(
         return httpClient(original);
       } catch (refreshError) {
         processQueue(refreshError as AxiosError);
-        window.location.href = '/login';
+        // Safe redirect — only navigate to same-origin login path
+        const loginPath = '/login';
+        if (window.location.pathname !== loginPath) {
+          window.location.href = loginPath;
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

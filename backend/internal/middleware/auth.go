@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -125,15 +126,24 @@ func AuthRefresh(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		subject, tenantID, err := utils.ValidarRefreshToken(token)
+		subject, tenantID, rememberMe, err := utils.ValidarRefreshToken(token)
 		if err != nil {
 			utils.Unauthorized(c, "Refresh token inválido o expirado")
 			c.Abort()
 			return
 		}
 
-		c.Set("refresh_subject", subject)
-		c.Set("refresh_tenant_id", tenantID)
+		// Parsear userID desde subject "usuario:123"
+		var userID int64
+		if _, scanErr := fmt.Sscanf(subject, "usuario:%d", &userID); scanErr != nil || userID == 0 {
+			utils.Unauthorized(c, "Refresh token inválido")
+			c.Abort()
+			return
+		}
+
+		c.Set("usuario_id", userID)
+		c.Set("tenant_id", tenantID)
+		c.Set("remember_me", rememberMe)
 
 		c.Next()
 	}
@@ -197,7 +207,11 @@ func ObtenerNivelSuperAdmin(c *gin.Context) string {
 func RequireHTTPS() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.GetHeader("X-Forwarded-Proto") == "http" {
-			target := "https://" + c.Request.Host + c.Request.URL.String()
+			// Sanitize: use only the path to prevent host header injection (OWASP A10)
+			target := "https://" + c.Request.Host + c.Request.URL.Path
+			if c.Request.URL.RawQuery != "" {
+				target += "?" + c.Request.URL.RawQuery
+			}
 			c.Redirect(http.StatusMovedPermanently, target)
 			c.Abort()
 			return

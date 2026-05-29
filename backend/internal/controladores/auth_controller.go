@@ -36,10 +36,14 @@ func (c *AuthController) Login(ctx *gin.Context) {
 		utils.Unauthorized(ctx, err.Error())
 		return
 	}
-	// Cookies HttpOnly
+	refreshMaxAge := 3600 // 1 hora
+	if req.RememberMe {
+		refreshMaxAge = 7 * 24 * 3600 // 7 días
+	}
+	// Cookies HttpOnly (access: 10 min, refresh: 1h o 7d)
 	ctx.SetSameSite(http.SameSiteStrictMode)
-	ctx.SetCookie("access_token", resp.AccessToken, 900, "/", "", true, true)
-	ctx.SetCookie("refresh_token", resp.RefreshToken, 3600, "/api/v1/auth/refresh", "", true, true)
+	ctx.SetCookie("access_token", resp.AccessToken, 600, "/", "", true, true)
+	ctx.SetCookie("refresh_token", resp.RefreshToken, refreshMaxAge, "/api/v1/auth/refresh", "", true, true)
 
 	utils.SuccessResponse(ctx, "login exitoso", resp)
 }
@@ -60,7 +64,7 @@ func (c *AuthController) LoginPIN(ctx *gin.Context) {
 		return
 	}
 	ctx.SetSameSite(http.SameSiteStrictMode)
-	ctx.SetCookie("access_token", resp.AccessToken, 900, "/", "", true, true)
+	ctx.SetCookie("access_token", resp.AccessToken, 600, "/", "", true, true)
 	ctx.SetCookie("refresh_token", resp.RefreshToken, 3600, "/api/v1/auth/refresh", "", true, true)
 	utils.SuccessResponse(ctx, "login PIN exitoso", resp)
 }
@@ -68,14 +72,20 @@ func (c *AuthController) LoginPIN(ctx *gin.Context) {
 func (c *AuthController) RefrescarToken(ctx *gin.Context) {
 	usuarioID := middleware.ObtenerUsuarioID(ctx)
 	tenantID := middleware.ObtenerTenantID(ctx)
-	resp, err := c.Service.RefrescarToken(usuarioID, tenantID)
+	rememberMe, _ := ctx.Get("remember_me")
+	remember, _ := rememberMe.(bool)
+	resp, err := c.Service.RefrescarToken(usuarioID, tenantID, remember)
 	if err != nil {
 		utils.Unauthorized(ctx, err.Error())
 		return
 	}
+	refreshMaxAge := 3600
+	if remember {
+		refreshMaxAge = 7 * 24 * 3600
+	}
 	ctx.SetSameSite(http.SameSiteStrictMode)
-	ctx.SetCookie("access_token", resp.AccessToken, 900, "/", "", true, true)
-	ctx.SetCookie("refresh_token", resp.RefreshToken, 3600, "/api/v1/auth/refresh", "", true, true)
+	ctx.SetCookie("access_token", resp.AccessToken, 600, "/", "", true, true)
+	ctx.SetCookie("refresh_token", resp.RefreshToken, refreshMaxAge, "/api/v1/auth/refresh", "", true, true)
 	utils.SuccessResponse(ctx, "token refrescado", resp)
 }
 
@@ -188,7 +198,8 @@ func (c *AuthController) LoginSuperAdmin(ctx *gin.Context) {
 		return
 	}
 	ctx.SetSameSite(http.SameSiteStrictMode)
-	ctx.SetCookie("access_token", resp.AccessToken, 900, "/", "", true, true)
+	ctx.SetCookie("access_token", resp.AccessToken, 600, "/", "", true, true)
+	ctx.SetCookie("refresh_token", resp.RefreshToken, 3600, "/api/v1/auth/refresh", "", true, true)
 	utils.SuccessResponse(ctx, "login superadmin exitoso", resp)
 }
 

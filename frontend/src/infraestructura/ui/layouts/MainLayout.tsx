@@ -13,6 +13,10 @@ export default function MainLayout() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      {/* Skip link for keyboard/screen reader accessibility (WCAG 2.4.1) */}
+      <a href="#main-content" className="skip-link">
+        Ir al contenido principal
+      </a>
       <Sidebar />
       <div
         className={cn(
@@ -21,7 +25,7 @@ export default function MainLayout() {
         )}
       >
         <Header />
-        <main className="p-4 lg:p-6">
+        <main id="main-content" className="p-4 lg:p-6" role="main">
           <div className="mx-auto max-w-7xl page-enter">
             <Outlet />
           </div>

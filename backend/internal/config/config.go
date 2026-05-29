@@ -19,24 +19,25 @@ import (
 
 // Config contiene toda la configuración de la aplicación
 type Config struct {
-	Env          string
-	GinMode      string
-	ServerPort   string
-	ServerHost   string
-	DBHost       string
-	DBPort       string
-	DBName       string
-	DBUser       string
-	DBPassword   string
-	RedisHost    string
-	RedisPort    string
-	RedisPassword string
-	CORSOrigin   string
-	JWTSecret    string
+	Env              string
+	GinMode          string
+	ServerPort       string
+	ServerHost       string
+	DBHost           string
+	DBPort           string
+	DBName           string
+	DBUser           string
+	DBPassword       string
+	DBSSLMode        string
+	RedisHost        string
+	RedisPort        string
+	RedisPassword    string
+	CORSOrigin       string
+	JWTSecret        string
 	JWTRefreshSecret string
-	EncryptionKey string
-	ResendAPIKey string
-	EnableWS     bool
+	EncryptionKey    string
+	ResendAPIKey     string
+	EnableWS         bool
 }
 
 // CargarConfig carga la configuración desde variables de entorno
@@ -53,6 +54,7 @@ func CargarConfig() *Config {
 		DBName:           getEnv("DB_NAME", "restauflow"),
 		DBUser:           getEnv("DB_USER", "postgres"),
 		DBPassword:       getEnv("DB_PASSWORD", "postgres"),
+		DBSSLMode:        getEnv("DB_SSL_MODE", "disable"),
 		RedisHost:        getEnv("REDIS_HOST", "redis"),
 		RedisPort:        getEnv("REDIS_PORT", "6379"),
 		RedisPassword:    getEnv("REDIS_PASSWORD", ""),
@@ -67,9 +69,11 @@ func CargarConfig() *Config {
 
 // ConectarDB establece conexión con PostgreSQL y retorna *sql.DB
 func ConectarDB(cfg *Config) *sql.DB {
+	sslMode := cfg.DBSSLMode
+
 	dsn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName,
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName, sslMode,
 	)
 
 	db, err := sql.Open("postgres", dsn)
@@ -77,7 +81,7 @@ func ConectarDB(cfg *Config) *sql.DB {
 		log.Fatalf("Error al abrir conexión con PostgreSQL: %v", err)
 	}
 
-	// Configurar pool de conexiones
+	// Pool de conexiones optimizado
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(10)
 	db.SetConnMaxLifetime(5 * time.Minute)

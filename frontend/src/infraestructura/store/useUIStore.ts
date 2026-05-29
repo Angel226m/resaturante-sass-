@@ -16,6 +16,16 @@ interface UIState {
   toggleCollapsed: () => void;
   setLocalSeleccionado: (id: string | null) => void;
   setTheme: (theme: 'light' | 'dark') => void;
+  toggleTheme: () => void;
+}
+
+/** Resolves initial theme: persisted → system preference → light */
+function resolveInitialTheme(): 'light' | 'dark' {
+  try {
+    const stored = JSON.parse(localStorage.getItem('restauflow-ui') || '{}');
+    if (stored?.state?.theme) return stored.state.theme;
+  } catch (_) {}
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 export const useUIStore = create<UIState>()(
@@ -24,7 +34,7 @@ export const useUIStore = create<UIState>()(
       sidebarOpen: false,
       sidebarCollapsed: false,
       localSeleccionadoId: null,
-      theme: 'light',
+      theme: resolveInitialTheme(),
 
       toggleSidebar: () => set({ sidebarOpen: !get().sidebarOpen }),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
@@ -33,6 +43,11 @@ export const useUIStore = create<UIState>()(
       setTheme: (theme) => {
         document.documentElement.classList.toggle('dark', theme === 'dark');
         set({ theme });
+      },
+      toggleTheme: () => {
+        const next = get().theme === 'light' ? 'dark' : 'light';
+        document.documentElement.classList.toggle('dark', next === 'dark');
+        set({ theme: next });
       },
     }),
     {

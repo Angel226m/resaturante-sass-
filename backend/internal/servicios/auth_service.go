@@ -88,7 +88,7 @@ func (s *AuthService) LoginPIN(tenantID string, localID int, pin string) (*auth.
 	}, nil
 }
 
-func (s *AuthService) RefrescarToken(usuarioID int64, tenantID string) (*auth.LoginResponse, error) {
+func (s *AuthService) RefrescarToken(usuarioID int64, tenantID string, rememberMe bool) (*auth.LoginResponse, error) {
 	usuario, err := s.Repo.ObtenerUsuarioPorID(tenantID, usuarioID)
 	if err != nil {
 		return nil, fmt.Errorf("usuario no encontrado")
@@ -100,7 +100,7 @@ func (s *AuthService) RefrescarToken(usuarioID int64, tenantID string) (*auth.Lo
 	}
 
 	accessToken, _ := utils.GenerarAccessToken(usuario.ID, tenantID, usuario.Rol, localID)
-	refreshToken, _ := utils.GenerarRefreshToken(usuario.ID, tenantID, false)
+	refreshToken, _ := utils.GenerarRefreshToken(usuario.ID, tenantID, rememberMe)
 
 	return &auth.LoginResponse{
 		AccessToken:  accessToken,

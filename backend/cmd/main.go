@@ -3,22 +3,38 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/restauflow/backend/internal/config"
 	"github.com/restauflow/backend/internal/jobs"
+	"github.com/restauflow/backend/internal/middleware"
 	"github.com/restauflow/backend/internal/rutas"
 	"github.com/restauflow/backend/internal/utils"
 )
 
 // ==========================================
 // RestauFlow SaaS — Punto de entrada
+// OWASP Hardened | ISO 27001
 // ==========================================
 
 func main() {
 	// Cargar configuración
 	cfg := config.CargarConfig()
+
+	// Validar configuración crítica en producción
+	if cfg.Env == "production" {
+		if cfg.JWTSecret == "" || cfg.JWTRefreshSecret == "" {
+			log.Fatal("FATAL: JWT_SECRET y JWT_REFRESH_SECRET son obligatorios en producción")
+		}
+		if cfg.EncryptionKey == "" {
+			log.Fatal("FATAL: ENCRYPTION_KEY es obligatoria en producción")
+		}
+		if len(cfg.JWTSecret) < 32 {
+			log.Fatal("FATAL: JWT_SECRET debe tener al menos 32 caracteres")
+		}
+	}
 
 	// Inicializar cifrado AES-256-GCM
 	if cfg.EncryptionKey != "" {
@@ -37,24 +53,56 @@ func main() {
 	defer rdb.Close()
 
 	// Configurar modo Gin
-	gin.SetMode(cfg.GinMode)
+	if cfg.Env == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(cfg.GinMode)
+	}
 
 	// Crear router
 	router := gin.New()
 
-	// Middleware global
-	router.Use(gin.Logger())
+	// --- Middleware de seguridad global (orden importa) ---
+
+	// 1. Recovery (siempre primero)
 	router.Use(gin.Recovery())
 
-	// Configurar CORS
+	// 2. Error handler personalizado
+	router.Use(middleware.ErrorHandler())
+
+	// 3. Security headers middleware
+	router.Use(middleware.SecurityHeaders())
+
+	// 4. Request ID
+	router.Use(middleware.RequestID())
+
+	// 5. Logger
+	router.Use(middleware.Logger())
+
+	// 6. IP Blacklist
+	router.Use(middleware.CheckBlacklist(rdb))
+
+	// 7. CORS (hardened)
 	corsConfig := cors.Config{
 		AllowOrigins:     []string{cfg.CORSOrigin},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-Requested-With"},
-		ExposeHeaders:    []string{"Content-Length", "X-Request-Id"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-Requested-With", "X-Request-ID"},
+		ExposeHeaders:    []string{"Content-Length", "X-Request-Id", "X-RateLimit-Limit", "X-RateLimit-Remaining"},
 		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
 	}
 	router.Use(cors.New(corsConfig))
+
+	// 8. HTTPS redirect en producción
+	if cfg.Env == "production" {
+		router.Use(middleware.RequireHTTPS())
+	}
+
+	// Limitar tamaño de body (previene DoS)
+	router.MaxMultipartMemory = 8 << 20 // 8 MB
+
+	// Trusted proxies (OWASP: validate X-Forwarded-For)
+	router.SetTrustedProxies([]string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"})
 
 	// Iniciar WebSocket Hub si está habilitado
 	if cfg.EnableWS {
@@ -63,12 +111,27 @@ func main() {
 		log.Println("✓ WebSocket Hub iniciado")
 	}
 
-	// Health check
+	// Health check (no auth required) — includes DB and Redis liveness
 	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status":  "ok",
+		ctx := c.Request.Context()
+
+		dbOK := db.PingContext(ctx) == nil
+		redisOK := rdb.Ping(ctx).Err() == nil
+
+		status := "ok"
+		code := 200
+		if !dbOK || !redisOK {
+			status = "degraded"
+			code = 503
+		}
+
+		c.JSON(code, gin.H{
+			"status":  status,
 			"service": "restauflow-backend",
-			"env":     cfg.Env,
+			"checks": gin.H{
+				"db":    map[string]bool{"ok": dbOK},
+				"redis": map[string]bool{"ok": redisOK},
+			},
 		})
 	})
 

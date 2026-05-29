@@ -1,11 +1,13 @@
 # ==========================================
 # RestauFlow SaaS — Docker Compose LOCAL
-# Sin nginx, puertos expuestos directamente
+# Sin nginx externo, puertos expuestos para desarrollo
 # ==========================================
+
+name: restauflow-local
 
 services:
   db:
-    image: postgres:18-alpine
+    image: postgres:17-alpine
     container_name: restauflow-db
     restart: unless-stopped
     ports:
@@ -14,6 +16,7 @@ services:
       POSTGRES_DB: restauflow
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/migrations:/docker-entrypoint-initdb.d:ro
@@ -22,6 +25,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+    networks:
+      - local-net
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
 
   redis:
     image: redis:7-alpine
@@ -36,6 +47,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - local-net
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
 
   backend:
     build:
@@ -55,12 +73,14 @@ services:
       DB_NAME: restauflow
       DB_USER: postgres
       DB_PASSWORD: postgres
+      DB_SSL_MODE: disable
       REDIS_HOST: redis
       REDIS_PORT: "6379"
       REDIS_PASSWORD: ""
-      CORS_ORIGIN: "http://localhost:5173"
-      JWT_SECRET: "dev-jwt-secret-restauflow-2024-cambiar-en-produccion"
-      JWT_REFRESH_SECRET: "dev-jwt-refresh-secret-restauflow-2024-cambiar"
+      CORS_ORIGIN: "http://localhost:3000"
+      # WARNING: dev-only secrets — NEVER use in production
+      JWT_SECRET: "dev-jwt-secret-restauflow-local-min32chars!!"
+      JWT_REFRESH_SECRET: "dev-jwt-refresh-restauflow-local-min32chars!"
       ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef"
       ENABLE_WEBSOCKETS: "true"
     depends_on:
@@ -68,7 +88,51 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - local-net
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: restauflow-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    tmpfs:
+      - /tmp
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - local-net
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  local-net:
+    driver: bridge

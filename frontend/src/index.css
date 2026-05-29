@@ -197,6 +197,59 @@ body {
   animation: fade-in 0.3s ease-out, slide-up 0.15s ease-out;
 }
 
+/* ── Dark mode body ── */
+.dark body,
+.dark {
+  background-color: var(--color-surface-950);
+  color: var(--color-surface-100);
+}
+
+/* ── Focus-visible for accessibility (WCAG 2.1 AA) ── */
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Skip link for screen readers ── */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  padding: 8px;
+  z-index: 100;
+  background: var(--color-primary-600);
+  color: white;
+  transition: top 0.2s;
+}
+.skip-link:focus {
+  top: 0;
+}
+
+/* ── Selection ── */
+::selection {
+  background-color: rgba(13, 148, 136, 0.2);
+  color: inherit;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--color-surface-300); border-radius: 3px; }

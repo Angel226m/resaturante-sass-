@@ -158,6 +158,40 @@ func EncryptNumeroDocumento(doc string) (string, error) { return EncryptFast(doc
 // DecryptNumeroDocumento descifra un número de documento
 func DecryptNumeroDocumento(doc string) (string, error) { return DecryptFast(doc) }
 
+// ==========================================
+// Helpers exclusivos para tests
+// ==========================================
+
+// ResetCryptoForTesting reinicializa el singleton con una clave nueva.
+// Solo para uso en tests; no llamar desde código de producción.
+func ResetCryptoForTesting(key string) {
+	gcmCipher = nil
+	cryptoOnce = sync.Once{}
+	InitCrypto(key)
+}
+
+// ClearCryptoForTesting limpia el cipher activo y devuelve el anterior.
+// Solo para uso en tests.
+func ClearCryptoForTesting() cipher.AEAD {
+	prev := gcmCipher
+	gcmCipher = nil
+	return prev
+}
+
+// RestoreCryptoForTesting restaura un cipher previamente guardado.
+// Solo para uso en tests.
+func RestoreCryptoForTesting(c cipher.AEAD) {
+	gcmCipher = c
+}
+
+// ResetCryptoOnceForTesting resetea el singleton sin inicializar.
+// Permite llamar a InitCrypto de nuevo desde los tests.
+// Solo para uso en tests.
+func ResetCryptoOnceForTesting() {
+	gcmCipher = nil
+	cryptoOnce = sync.Once{}
+}
+
 // EncryptRUC cifra un RUC (determinístico)
 func EncryptRUC(ruc string) (string, error) { return EncryptFast(ruc) }
 

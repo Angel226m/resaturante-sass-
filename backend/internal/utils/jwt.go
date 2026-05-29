@@ -30,7 +30,7 @@ type SuperAdminClaims struct {
 	jwt.RegisteredClaims
 }
 
-// GenerarAccessToken genera un token de acceso JWT (15 minutos)
+// GenerarAccessToken genera un token de acceso JWT (10 minutos)
 func GenerarAccessToken(userID int, tenantID, rol string, localID int) (string, error) {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
@@ -44,7 +44,7 @@ func GenerarAccessToken(userID int, tenantID, rol string, localID int) (string, 
 		LocalID:  localID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   "usuario:" + strconv.Itoa(userID),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(10 * time.Minute)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    "restauflow",
 		},
@@ -52,6 +52,13 @@ func GenerarAccessToken(userID int, tenantID, rol string, localID int) (string, 
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))
+}
+
+// RefreshClaims claims del token de refresco con soporte remember-me
+type RefreshClaims struct {
+	TenantID   string `json:"tid"`
+	RememberMe bool   `json:"rem"`
+	jwt.RegisteredClaims
 }
 
 // GenerarRefreshToken genera un token de refresco JWT
@@ -67,12 +74,15 @@ func GenerarRefreshToken(userID int, tenantID string, rememberMe bool) (string, 
 		duracion = 7 * 24 * time.Hour
 	}
 
-	claims := jwt.RegisteredClaims{
-		Subject:   "usuario:" + strconv.Itoa(userID),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(duracion)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		Issuer:    "restauflow-refresh",
-		ID:        tenantID,
+	claims := RefreshClaims{
+		TenantID:   tenantID,
+		RememberMe: rememberMe,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   "usuario:" + strconv.Itoa(userID),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duracion)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Issuer:    "restauflow-refresh",
+		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -105,14 +115,14 @@ func ValidarAccessToken(tokenString string) (*JWTClaims, error) {
 	return claims, nil
 }
 
-// ValidarRefreshToken valida un token de refresco y retorna el subject y tenant_id
-func ValidarRefreshToken(tokenString string) (string, string, error) {
+// ValidarRefreshToken valida un token de refresco y retorna subject, tenantID y rememberMe
+func ValidarRefreshToken(tokenString string) (string, string, bool, error) {
 	secret := os.Getenv("JWT_REFRESH_SECRET")
 	if secret == "" {
-		return "", "", errors.New("JWT_REFRESH_SECRET no configurado")
+		return "", "", false, errors.New("JWT_REFRESH_SECRET no configurado")
 	}
 
-	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &RefreshClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("método de firma inesperado")
 		}
@@ -120,15 +130,15 @@ func ValidarRefreshToken(tokenString string) (string, string, error) {
 	})
 
 	if err != nil {
-		return "", "", errors.New("token de refresco inválido o expirado")
+		return "", "", false, errors.New("token de refresco inválido o expirado")
 	}
 
-	claims, ok := token.Claims.(*jwt.RegisteredClaims)
+	claims, ok := token.Claims.(*RefreshClaims)
 	if !ok || !token.Valid {
-		return "", "", errors.New("token de refresco inválido")
+		return "", "", false, errors.New("token de refresco inválido")
 	}
 
-	return claims.Subject, claims.ID, nil
+	return claims.Subject, claims.TenantID, claims.RememberMe, nil
 }
 
 // GenerarAccessTokenSuperAdmin genera un token de acceso para SuperAdmin (15 min)

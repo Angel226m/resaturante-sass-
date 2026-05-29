@@ -18,6 +18,7 @@ const loginSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Mínimo 6 caracteres'),
   tenant_slug: z.string().min(1, 'Ingresa tu código de restaurante'),
+  remember_me: z.boolean().optional().default(false),
 });
 type LoginForm = z.infer<typeof loginSchema>;
 
@@ -115,7 +116,7 @@ export default function LoginPage() {
         toast.success('¡Bienvenido, Super Admin!');
         navigate('/superadmin');
       } else {
-        await login(data.email, data.password, data.tenant_slug);
+        await login(data.email, data.password, data.tenant_slug, data.remember_me ?? false);
         setLocalSeleccionado('demo-local-1');
         toast.success('¡Bienvenido!');
         const rol = useAuthStore.getState().usuario?.rol;
@@ -322,9 +323,13 @@ export default function LoginPage() {
                 />
 
                 <div className="flex items-center justify-between pt-1">
-                  <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                    <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500" />
-                    Recordarme
+                  <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700"
+                      {...register('remember_me')}
+                    />
+                    Recordarme 7 días
                   </label>
                   <Link to="/recuperar-password" className="text-sm font-medium text-teal-600 hover:text-teal-700">
                     ¿Olvidaste tu contraseña?

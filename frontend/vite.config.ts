@@ -25,14 +25,22 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    sourcemap: false,
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          charts: ['recharts'],
-          query: ['@tanstack/react-query'],
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-charts': ['recharts'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          'vendor-state': ['zustand'],
+          'vendor-ui': ['lucide-react', 'react-hot-toast'],
         },
       },
     },
+  },
+  preview: {
+    port: 4173,
   },
 });

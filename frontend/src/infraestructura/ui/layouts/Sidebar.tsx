@@ -134,24 +134,39 @@ function NavGroup({ title, items }: { title: string; items: NavItem[] }) {
           {title}
         </p>
       )}
+      {sidebarCollapsed && <div className="mx-auto mb-1 h-px w-6 bg-slate-200 dark:bg-slate-700" />}
       {items.map((item) => (
         <NavLink
           key={item.to}
           to={item.to}
           end={item.to === '/mesero' || item.to === '/cocinero' || item.to === '/superadmin' || item.to === '/dashboard'}
           onClick={() => setSidebarOpen(false)}
+          title={sidebarCollapsed ? item.label : undefined}
           className={({ isActive }) =>
             cn(
-              'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+              'group/nav relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
               sidebarCollapsed && 'justify-center px-2',
               isActive
-                ? 'bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-400'
+                ? 'bg-teal-50 text-teal-700 shadow-sm shadow-teal-500/5 dark:bg-teal-900/20 dark:text-teal-400'
                 : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white',
             )
           }
         >
-          {item.icon}
-          {!sidebarCollapsed && <span>{item.label}</span>}
+          {({ isActive }) => (
+            <>
+              {isActive && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-teal-500 transition-all" />
+              )}
+              {item.icon}
+              {!sidebarCollapsed && <span>{item.label}</span>}
+              {sidebarCollapsed && (
+                <span className="pointer-events-none absolute left-full ml-3 hidden rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg group-hover/nav:block dark:bg-slate-700 whitespace-nowrap z-50">
+                  {item.label}
+                  <span className="absolute -left-1 top-1/2 -translate-y-1/2 h-2 w-2 rotate-45 bg-slate-900 dark:bg-slate-700" />
+                </span>
+              )}
+            </>
+          )}
         </NavLink>
       ))}
     </div>
