@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/restauflow/backend/internal/utils"
 )
@@ -22,7 +24,7 @@ func RequiereRol(rolesPermitidos ...string) gin.HandlerFunc {
 
 		permitido := false
 		for _, r := range rolesPermitidos {
-			if rol == r {
+			if strings.EqualFold(rol, r) {
 				permitido = true
 				break
 			}

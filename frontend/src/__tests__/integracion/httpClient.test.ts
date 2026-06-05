@@ -42,7 +42,15 @@ const { apiGet, apiPost, apiPut, apiDelete, httpClient } = await import(
 );
 
 // Referencia tipada al mock interno (__mockClient está en el namespace del módulo, no en default)
-const mockClient = (axiosNS as unknown as { __mockClient: Record<string, ReturnType<typeof vi.fn>> }).__mockClient;
+const mockClient = (axiosNS as unknown as {
+  __mockClient: {
+    get: ReturnType<typeof vi.fn>;
+    post: ReturnType<typeof vi.fn>;
+    put: ReturnType<typeof vi.fn>;
+    patch: ReturnType<typeof vi.fn>;
+    delete: ReturnType<typeof vi.fn>;
+  };
+}).__mockClient;
 
 beforeEach(() => {
   vi.clearAllMocks();

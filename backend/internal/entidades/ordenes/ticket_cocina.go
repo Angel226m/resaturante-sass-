@@ -9,9 +9,11 @@ import "time"
 
 // TicketCocina ticket enviado a cocina/bar
 type TicketCocina struct {
-	ID             int64      `json:"id_ticket_cocina"     db:"id"`
+	ID             int64      `json:"id"                   db:"id"`
 	TenantID       string     `json:"tenant_id"            db:"tenant_id"`
 	OrdenID        int64      `json:"orden_id"             db:"orden_id"`
+	LocalID        int        `json:"local_id"             db:"local_id"`
+	NumeroTicket   int        `json:"numero_ticket"        db:"numero_ticket"`
 	EstacionCocina string     `json:"estacion_cocina"      db:"estacion_cocina"`
 	Estado         string     `json:"estado"               db:"estado"`
 	Prioridad      int        `json:"prioridad"            db:"prioridad"`

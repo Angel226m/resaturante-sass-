@@ -1,28 +1,35 @@
-import { useQuery } from '@tanstack/react-query';
+﻿import { useQuery } from '@tanstack/react-query';
 import { LayoutDashboard, Building2, CreditCard, DollarSign, Activity } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { useAuthStore } from '@/infraestructura/store/useAuthStore';
 import { plataformaRepository } from '@/infraestructura/repositorios';
 import { Card, CardHeader, StatCard } from '@/infraestructura/ui/componentes/comunes';
 import { formatCurrency } from '@/compartidos/utilidades';
 
-// ═══════════════════════════════════════════════════════════
-// SuperAdmin Dashboard — overview de la plataforma
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// SuperAdmin Dashboard â€” overview de la plataforma
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 export default function SuperAdminDashboard() {
+  const { isSuperAdmin, isLoading } = useAuthStore();
+
+  // Only fetch data when auth is confirmed as superadmin
   const { data: tenants = [] } = useQuery({
     queryKey: ['superadmin', 'tenants'],
     queryFn: () => plataformaRepository.listarTenants(),
+    enabled: isSuperAdmin && !isLoading,
   });
 
   const { data: planes = [] } = useQuery({
     queryKey: ['superadmin', 'planes'],
     queryFn: () => plataformaRepository.listarPlanes(),
+    enabled: isSuperAdmin && !isLoading,
   });
 
   const { data: suscripciones = [] } = useQuery({
     queryKey: ['superadmin', 'suscripciones'],
     queryFn: () => plataformaRepository.listarFacturas(),
+    enabled: isSuperAdmin && !isLoading,
   });
 
   const activos = tenants.filter((t: any) => t.activo !== false).length;
@@ -46,10 +53,10 @@ export default function SuperAdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <LayoutDashboard className="h-7 w-7 text-teal-600" /> Panel de Plataforma
         </h1>
-        <p className="text-slate-500">Visión general de RestauFlow SaaS</p>
+        <p className="text-slate-500">VisiÃ³n general de RestauFlow SaaS</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -62,7 +69,7 @@ export default function SuperAdminDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Tenant Growth */}
         <Card>
-          <CardHeader title="Crecimiento de Tenants" description="Últimos 6 meses" />
+          <CardHeader title="Crecimiento de Tenants" description="Ãšltimos 6 meses" />
           <div className="p-4 h-72">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={tenantsTrend}>
@@ -84,7 +91,7 @@ export default function SuperAdminDashboard() {
 
         {/* Plan Distribution */}
         <Card>
-          <CardHeader title="Distribución por Plan" description="Suscripciones activas" />
+          <CardHeader title="DistribuciÃ³n por Plan" description="Suscripciones activas" />
           <div className="p-4 h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={planDistribution}>
@@ -101,8 +108,8 @@ export default function SuperAdminDashboard() {
 
       {/* Recent Tenants */}
       <Card>
-        <CardHeader title="Tenants Recientes" description="Últimos registros" />
-        <div className="divide-y divide-slate-100 dark:divide-slate-700">
+        <CardHeader title="Tenants Recientes" description="Ãšltimos registros" />
+        <div className="divide-y divide-slate-100">
           {tenants.slice(0, 5).map((t: any) => (
             <div key={t.id} className="flex items-center justify-between px-6 py-4">
               <div className="flex items-center gap-3">
@@ -110,13 +117,13 @@ export default function SuperAdminDashboard() {
                   {t.nombre?.charAt(0)?.toUpperCase() || 'T'}
                 </div>
                 <div>
-                  <p className="font-medium text-slate-900 dark:text-white">{t.nombre}</p>
+                  <p className="font-medium text-slate-900">{t.nombre}</p>
                   <p className="text-xs text-slate-500">{t.slug}</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-sm font-medium text-slate-900 dark:text-white">{t.plan_nombre || 'N/A'}</p>
-                <p className="text-xs text-slate-500">{t.activo !== false ? '✅ Activo' : '❌ Inactivo'}</p>
+                <p className="text-sm font-medium text-slate-900">{t.plan_nombre || 'N/A'}</p>
+                <p className="text-xs text-slate-500">{t.activo !== false ? 'âœ… Activo' : 'âŒ Inactivo'}</p>
               </div>
             </div>
           ))}
@@ -125,3 +132,4 @@ export default function SuperAdminDashboard() {
     </div>
   );
 }
+

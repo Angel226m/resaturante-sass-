@@ -82,9 +82,12 @@ func main() {
 	// 6. IP Blacklist
 	router.Use(middleware.CheckBlacklist(rdb))
 
-	// 7. CORS (hardened)
+	// 7. Host header validation (prevents Host header injection)
+	router.Use(middleware.ValidateHost(cfg.AllowedHosts))
+
+	// 8. CORS (hardened)
 	corsConfig := cors.Config{
-		AllowOrigins:     []string{cfg.CORSOrigin},
+		AllowOrigins:     cfg.CORSOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-Requested-With", "X-Request-ID"},
 		ExposeHeaders:    []string{"Content-Length", "X-Request-Id", "X-RateLimit-Limit", "X-RateLimit-Remaining"},
@@ -93,7 +96,10 @@ func main() {
 	}
 	router.Use(cors.New(corsConfig))
 
-	// 8. HTTPS redirect en producción
+	// 9. Request size limit for all body types (OWASP API4)
+	router.Use(middleware.MaxBodyBytes(cfg.MaxRequestBytes))
+
+	// 10. HTTPS redirect en producción
 	if cfg.Env == "production" {
 		router.Use(middleware.RequireHTTPS())
 	}
@@ -102,7 +108,9 @@ func main() {
 	router.MaxMultipartMemory = 8 << 20 // 8 MB
 
 	// Trusted proxies (OWASP: validate X-Forwarded-For)
-	router.SetTrustedProxies([]string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"})
+	if err := router.SetTrustedProxies([]string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"}); err != nil {
+		log.Fatalf("FATAL: trusted proxies inválidos: %v", err)
+	}
 
 	// Iniciar WebSocket Hub si está habilitado
 	if cfg.EnableWS {
@@ -110,30 +118,6 @@ func main() {
 		go hub.Ejecutar()
 		log.Println("✓ WebSocket Hub iniciado")
 	}
-
-	// Health check (no auth required) — includes DB and Redis liveness
-	router.GET("/health", func(c *gin.Context) {
-		ctx := c.Request.Context()
-
-		dbOK := db.PingContext(ctx) == nil
-		redisOK := rdb.Ping(ctx).Err() == nil
-
-		status := "ok"
-		code := 200
-		if !dbOK || !redisOK {
-			status = "degraded"
-			code = 503
-		}
-
-		c.JSON(code, gin.H{
-			"status":  status,
-			"service": "restauflow-backend",
-			"checks": gin.H{
-				"db":    map[string]bool{"ok": dbOK},
-				"redis": map[string]bool{"ok": redisOK},
-			},
-		})
-	})
 
 	// Registrar todas las rutas
 	rutas.RegistrarRutas(router, db, rdb, cfg)

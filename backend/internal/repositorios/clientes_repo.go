@@ -30,10 +30,11 @@ func (r *ClientesRepo) ListarClientes(tenantID string, localID int, pagina, porP
 
 	offset := (pagina - 1) * porPagina
 	rows, err := r.DB.Query(`
-		SELECT id, tenant_id, local_id, nombres, apellidos, tipo_documento,
-			   correo_cifrado, celular_cifrado, documento_cifrado,
-			   fecha_nacimiento, genero, total_compras,
-			   cantidad_visitas, ultima_visita, notas,
+		SELECT id, tenant_id, local_id, nombres,
+			   COALESCE(apellidos, ''), COALESCE(tipo_documento, ''),
+			   COALESCE(correo_cifrado, ''), COALESCE(celular_cifrado, ''), COALESCE(documento_cifrado, ''),
+			   fecha_nacimiento, COALESCE(genero, ''), total_compras,
+			   cantidad_visitas, ultima_visita, COALESCE(notas, ''),
 			   activo, deleted_at, created_at, updated_at
 		FROM clientes WHERE tenant_id = $1 AND local_id = $2 AND deleted_at IS NULL
 		ORDER BY nombres, apellidos LIMIT $3 OFFSET $4
@@ -63,10 +64,11 @@ func (r *ClientesRepo) ListarClientes(tenantID string, localID int, pagina, porP
 func (r *ClientesRepo) ObtenerCliente(tenantID string, id int64) (*clientes.Cliente, error) {
 	var c clientes.Cliente
 	err := r.DB.QueryRow(`
-		SELECT id, tenant_id, local_id, nombres, apellidos, tipo_documento,
-			   correo_cifrado, celular_cifrado, documento_cifrado,
-			   fecha_nacimiento, genero, total_compras,
-			   cantidad_visitas, ultima_visita, notas,
+		SELECT id, tenant_id, local_id, nombres,
+			   COALESCE(apellidos, ''), COALESCE(tipo_documento, ''),
+			   COALESCE(correo_cifrado, ''), COALESCE(celular_cifrado, ''), COALESCE(documento_cifrado, ''),
+			   fecha_nacimiento, COALESCE(genero, ''), total_compras,
+			   cantidad_visitas, ultima_visita, COALESCE(notas, ''),
 			   activo, deleted_at, created_at, updated_at
 		FROM clientes WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
 	`, id, tenantID).Scan(&c.ID, &c.TenantID, &c.LocalID, &c.Nombres, &c.Apellidos,
@@ -202,8 +204,9 @@ func (r *ClientesRepo) BuscarClientes(tenantID string, req clientes.BuscarClient
 
 	offset := (req.Pagina - 1) * req.PorPagina
 	rows, err := r.DB.Query(`
-		SELECT id, tenant_id, local_id, nombres, apellidos, tipo_documento,
-			   correo_cifrado, celular_cifrado, documento_cifrado,
+		SELECT id, tenant_id, local_id, nombres,
+			   COALESCE(apellidos, ''), COALESCE(tipo_documento, ''),
+			   COALESCE(correo_cifrado, ''), COALESCE(celular_cifrado, ''), COALESCE(documento_cifrado, ''),
 			   total_compras, cantidad_visitas,
 			   activo, created_at
 		FROM clientes

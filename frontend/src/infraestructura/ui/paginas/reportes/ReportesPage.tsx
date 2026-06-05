@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3, TrendingUp, Calendar, DollarSign, ShoppingBag, Users, FileText } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -7,9 +7,9 @@ import { Button, Card, CardHeader, StatCard, Tabs, DataTable, Badge, Input } fro
 import { formatCurrency, formatDateTime } from '@/compartidos/utilidades';
 import type { Column } from '@/infraestructura/ui/componentes/comunes/DataTable';
 
-// ═══════════════════════════════════════════════════════════
-// Reportes — dashboard, resumen diario, audit log
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Reportes â€” dashboard, resumen diario, audit log
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 const COLORS = ['#0d9488', '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
 
@@ -38,34 +38,40 @@ export default function ReportesPage() {
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 className="h-4 w-4" /> },
     { id: 'resumen', label: 'Resumen Diario', icon: <Calendar className="h-4 w-4" /> },
-    { id: 'audit', label: 'Auditoría', icon: <FileText className="h-4 w-4" /> },
+    { id: 'audit', label: 'AuditorÃ­a', icon: <FileText className="h-4 w-4" /> },
   ];
 
   const auditColumns: Column<any>[] = [
     { key: 'created_at', label: 'Fecha', sortable: true, render: (r) => <span className="text-xs">{formatDateTime(r.created_at)}</span> },
     { key: 'usuario_nombre', label: 'Usuario', render: (r) => <span className="font-medium">{r.usuario_nombre || r.usuario_id?.slice(0, 8)}</span> },
-    { key: 'accion', label: 'Acción', render: (r) => <Badge variant="default">{r.accion}</Badge> },
-    { key: 'entidad', label: 'Entidad', render: (r) => <span className="text-sm text-slate-600 dark:text-slate-400">{r.entidad}</span> },
-    { key: 'descripcion', label: 'Descripción', render: (r) => <span className="text-xs text-slate-500 max-w-[300px] truncate block">{r.descripcion || '—'}</span> },
-    { key: 'ip', label: 'IP', render: (r) => <span className="font-mono text-xs text-slate-400">{r.ip || '—'}</span> },
+    { key: 'accion', label: 'AcciÃ³n', render: (r) => <Badge variant="default">{r.accion}</Badge> },
+    { key: 'entidad', label: 'Entidad', render: (r) => <span className="text-sm text-slate-600">{r.entidad}</span> },
+    { key: 'descripcion', label: 'DescripciÃ³n', render: (r) => <span className="text-xs text-slate-500 max-w-[300px] truncate block">{r.descripcion || 'â€”'}</span> },
+    { key: 'ip', label: 'IP', render: (r) => <span className="font-mono text-xs text-slate-400">{r.ip || 'â€”'}</span> },
   ];
 
-  // Mock data for charts when API returns null
-  const ventasSemana = dashboard?.ventas_semana || [
-    { dia: 'Lun', total: 0 }, { dia: 'Mar', total: 0 }, { dia: 'Mié', total: 0 },
-    { dia: 'Jue', total: 0 }, { dia: 'Vie', total: 0 }, { dia: 'Sáb', total: 0 }, { dia: 'Dom', total: 0 },
+  const DIAS_SEMANA = ['Dom', 'Lun', 'Mar', 'MiÃ©', 'Jue', 'Vie', 'SÃ¡b'];
+  const ventasSemana = dashboard?.ventas_por_dia?.map((v) => ({
+    dia: DIAS_SEMANA[new Date(v.fecha + 'T12:00:00').getDay()] ?? v.fecha.slice(5),
+    total: v.total,
+    ordenes: v.ordenes,
+  })) ?? [
+    { dia: 'Lun', total: 0, ordenes: 0 }, { dia: 'Mar', total: 0, ordenes: 0 },
+    { dia: 'MiÃ©', total: 0, ordenes: 0 }, { dia: 'Jue', total: 0, ordenes: 0 },
+    { dia: 'Vie', total: 0, ordenes: 0 }, { dia: 'SÃ¡b', total: 0, ordenes: 0 },
+    { dia: 'Dom', total: 0, ordenes: 0 },
   ];
 
-  const topProductos = dashboard?.top_productos || [];
-  const metodosPago = dashboard?.metodos_pago || [];
+  const topProductos = dashboard?.productos_mas_vendidos ?? [];
+  const categorias = dashboard?.ventas_por_categoria ?? [];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <BarChart3 className="h-7 w-7 text-teal-600" /> Reportes
         </h1>
-        <p className="text-slate-500">Análisis y métricas del negocio</p>
+        <p className="text-slate-500">AnÃ¡lisis y mÃ©tricas del negocio</p>
       </div>
 
       <Tabs tabs={tabs} activeTab={tab} onChange={setTab} />
@@ -74,9 +80,9 @@ export default function ReportesPage() {
       {tab === 'dashboard' && (
         <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard title="Ventas del Día" value={formatCurrency(dashboard?.ventas_hoy || 0)} icon={<DollarSign className="h-5 w-5" />} color="teal" />
-            <StatCard title="Órdenes del Día" value={(dashboard?.ordenes_hoy || 0).toString()} icon={<ShoppingBag className="h-5 w-5" />} color="blue" />
-            <StatCard title="Clientes del Día" value={(dashboard?.clientes_hoy || 0).toString()} icon={<Users className="h-5 w-5" />} color="emerald" />
+            <StatCard title="Ventas del DÃ­a" value={formatCurrency(dashboard?.ventas_hoy || 0)} icon={<DollarSign className="h-5 w-5" />} color="teal" />
+            <StatCard title="Ã“rdenes del DÃ­a" value={(dashboard?.ordenes_hoy || 0).toString()} icon={<ShoppingBag className="h-5 w-5" />} color="blue" />
+            <StatCard title="Clientes del DÃ­a" value={(dashboard?.clientes_hoy || 0).toString()} icon={<Users className="h-5 w-5" />} color="emerald" />
             <StatCard title="Ticket Promedio" value={formatCurrency(dashboard?.ticket_promedio || 0)} icon={<TrendingUp className="h-5 w-5" />} color="purple" />
           </div>
 
@@ -103,15 +109,15 @@ export default function ReportesPage() {
               </div>
             </Card>
 
-            {/* Métodos de pago */}
+            {/* Ventas por categorÃ­a */}
             <Card>
-              <CardHeader title="Métodos de Pago" description="Distribución de pagos" />
+              <CardHeader title="Ventas por CategorÃ­a" description="DistribuciÃ³n por categorÃ­a" />
               <div className="p-4 h-72 flex items-center justify-center">
-                {metodosPago.length > 0 ? (
+                {categorias.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={metodosPago} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="total">
-                        {metodosPago.map((_: any, i: number) => (
+                      <Pie data={categorias} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="total">
+                        {categorias.map((_: any, i: number) => (
                           <Cell key={i} fill={COLORS[i % COLORS.length]} />
                         ))}
                       </Pie>
@@ -119,16 +125,16 @@ export default function ReportesPage() {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <p className="text-sm text-slate-400">Sin datos todavía</p>
+                  <p className="text-sm text-slate-400">Sin datos todavÃ­a</p>
                 )}
               </div>
-              {metodosPago.length > 0 && (
-                <div className="border-t border-slate-100 p-4 dark:border-slate-700">
+              {categorias.length > 0 && (
+                <div className="border-t border-slate-100 p-4">
                   <div className="flex flex-wrap gap-3">
-                    {metodosPago.map((m: any, i: number) => (
+                    {categorias.map((m: any, i: number) => (
                       <div key={i} className="flex items-center gap-2 text-sm">
                         <div className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                        <span className="text-slate-600 dark:text-slate-400">{m.nombre}: {formatCurrency(m.total)}</span>
+                        <span className="text-slate-600">{m.nombre}: {formatCurrency(m.total)}</span>
                       </div>
                     ))}
                   </div>
@@ -140,7 +146,7 @@ export default function ReportesPage() {
           {/* Top productos */}
           {topProductos.length > 0 && (
             <Card>
-              <CardHeader title="Top Productos" description="Los más vendidos" />
+              <CardHeader title="Top Productos" description="Los mÃ¡s vendidos" />
               <div className="p-4 h-72">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={topProductos.slice(0, 10)} layout="vertical">
@@ -175,7 +181,7 @@ export default function ReportesPage() {
           {resumen && (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard title="Total Ventas" value={formatCurrency(resumen.total_ventas || 0)} icon={<DollarSign className="h-5 w-5" />} color="teal" />
-              <StatCard title="Total Órdenes" value={(resumen.total_ordenes || 0).toString()} icon={<ShoppingBag className="h-5 w-5" />} color="blue" />
+              <StatCard title="Total Ã“rdenes" value={(resumen.total_ordenes || 0).toString()} icon={<ShoppingBag className="h-5 w-5" />} color="blue" />
               <StatCard title="Ticket Promedio" value={formatCurrency(resumen.ticket_promedio || 0)} icon={<TrendingUp className="h-5 w-5" />} color="emerald" />
               <StatCard title="Clientes Atendidos" value={(resumen.clientes_atendidos || 0).toString()} icon={<Users className="h-5 w-5" />} color="purple" />
             </div>
@@ -183,7 +189,7 @@ export default function ReportesPage() {
         </div>
       )}
 
-      {/* --- TAB: Auditoría --- */}
+      {/* --- TAB: AuditorÃ­a --- */}
       {tab === 'audit' && (
         <Card>
           <DataTable
@@ -191,10 +197,11 @@ export default function ReportesPage() {
             data={auditLog}
             searchable
             searchPlaceholder="Buscar en audit log..."
-            emptyMessage="Sin registros de auditoría"
+            emptyMessage="Sin registros de auditorÃ­a"
           />
         </Card>
       )}
     </div>
   );
 }
+

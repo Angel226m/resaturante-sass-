@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -50,7 +51,7 @@ type WSHub struct {
 
 var (
 	hubInstance *WSHub
-	hubOnce    sync.Once
+	hubOnce     sync.Once
 )
 
 var upgrader = websocket.Upgrader{
@@ -199,11 +200,11 @@ func HandleWebSocket(hub *WSHub, tenantID, canal string, w http.ResponseWriter, 
 
 // Helpers para nombres de canales
 func canalCocina(tenantID string, localID int) string {
-	return "orders:" + tenantID + ":" + string(rune(localID+'0'))
+	return "orders:" + tenantID + ":" + strconv.Itoa(localID)
 }
 
 func canalMesas(tenantID string, localID int) string {
-	return "tables:" + tenantID + ":" + string(rune(localID+'0'))
+	return "tables:" + tenantID + ":" + strconv.Itoa(localID)
 }
 
 func canalDelivery(tenantID string) string {

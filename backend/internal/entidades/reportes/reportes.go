@@ -100,6 +100,9 @@ type DashboardResumen struct {
 	OrdenesMesa       int `json:"ordenes_mesa"`
 	OrdenesDelivery   int `json:"ordenes_delivery"`
 	OrdenesParaLlevar int `json:"ordenes_para_llevar"`
+
+	// Ventas por día (últimos 7 días)
+	VentasPorDia []VentaPorDia `json:"ventas_por_dia"`
 }
 
 // VentaPorCategoria ventas agrupadas por categoría de menú
@@ -123,4 +126,11 @@ type VentaPorHora struct {
 	Hora  int     `json:"hora"`
 	Total float64 `json:"total"`
 	Count int     `json:"cantidad"`
+}
+
+// VentaPorDia ventas agrupadas por día (últimos 7 días)
+type VentaPorDia struct {
+	Fecha   string  `json:"fecha"`
+	Total   float64 `json:"total"`
+	Ordenes int     `json:"ordenes"`
 }

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -49,8 +50,14 @@ func SecurityHeaders() gin.HandlerFunc {
 		c.Header("X-XSS-Protection", "0")
 		c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
 		c.Header("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
+		c.Header("Cross-Origin-Opener-Policy", "same-origin")
+		c.Header("Cross-Origin-Resource-Policy", "same-origin")
+		c.Header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
 		c.Header("Cache-Control", "no-store, no-cache, must-revalidate, private")
 		c.Header("Pragma", "no-cache")
+		if strings.EqualFold(c.GetHeader("X-Forwarded-Proto"), "https") || c.Request.TLS != nil {
+			c.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+		}
 
 		// Remove server identification
 		c.Header("Server", "")
@@ -70,7 +77,9 @@ func RequestID() gin.HandlerFunc {
 		requestID := c.GetHeader("X-Request-ID")
 		if requestID == "" {
 			b := make([]byte, 16)
-			rand.Read(b)
+			if _, err := rand.Read(b); err != nil {
+				b = []byte(time.Now().Format("20060102150405.000000"))
+			}
 			requestID = hex.EncodeToString(b)
 		}
 		c.Set("request_id", requestID)

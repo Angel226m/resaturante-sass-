@@ -1,10 +1,8 @@
-import { forwardRef, type ButtonHTMLAttributes } from 'react';
+﻿import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/compartidos/utilidades';
 
-// ═══════════════════════════════════════════════════════════
-// Button — primary, secondary, outline, ghost, danger
-// ═══════════════════════════════════════════════════════════
+// Button - primary, secondary, outline, ghost, danger
 
 type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
 type Size = 'sm' | 'md' | 'lg' | 'icon';
@@ -19,9 +17,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<Variant, string> = {
   primary: 'bg-teal-600 text-white hover:bg-teal-700 shadow-sm active:bg-teal-800',
-  secondary: 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600',
-  outline: 'border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800',
-  ghost: 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800',
+  secondary: 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+  outline: 'border border-slate-300 text-slate-700 hover:bg-slate-50',
+  ghost: 'text-slate-600 hover:bg-slate-100',
   danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm active:bg-red-800',
   success: 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm active:bg-emerald-800',
 };
@@ -55,3 +53,4 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
 Button.displayName = 'Button';
 export default Button;
+

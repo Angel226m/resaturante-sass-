@@ -7,78 +7,6 @@ import { authRepository } from '@/infraestructura/repositorios';
 // Store: Auth — login/logout, perfil, roles
 // ═══════════════════════════════════════════════════════════
 
-// ── Demo users (bypass API when backend is not running) ──
-const DEMO_USERS: Record<string, Usuario> = {
-  'admin@demo.com': {
-    id: 1,
-    tenant_id: 'demo-tenant-uuid',
-    local_id: 1,
-    nombre: 'Carlos',
-    apellidos: 'Administrador',
-    correo: 'admin@demo.com',
-    rol: 'admin',
-    avatar_url: null,
-    color_identificacion: '#0d9488',
-    activo: true,
-    ultimo_acceso: new Date().toISOString(),
-    creado_en: '2025-01-01T00:00:00Z',
-    actualizado_en: new Date().toISOString(),
-  },
-  'mesero@demo.com': {
-    id: 2,
-    tenant_id: 'demo-tenant-uuid',
-    local_id: 1,
-    nombre: 'Mar\u00eda',
-    apellidos: 'Mesera',
-    correo: 'mesero@demo.com',
-    rol: 'mesero',
-    avatar_url: null,
-    color_identificacion: '#3b82f6',
-    activo: true,
-    ultimo_acceso: new Date().toISOString(),
-    creado_en: '2025-01-01T00:00:00Z',
-    actualizado_en: new Date().toISOString(),
-  },
-  'cocinero@demo.com': {
-    id: 3,
-    tenant_id: 'demo-tenant-uuid',
-    local_id: 1,
-    nombre: 'Pedro',
-    apellidos: 'Cocinero',
-    correo: 'cocinero@demo.com',
-    rol: 'cocinero',
-    avatar_url: null,
-    color_identificacion: '#f59e0b',
-    activo: true,
-    ultimo_acceso: new Date().toISOString(),
-    creado_en: '2025-01-01T00:00:00Z',
-    actualizado_en: new Date().toISOString(),
-  },
-};
-
-const DEMO_PASSWORDS: Record<string, string> = {
-  'admin@demo.com': 'admin123',
-  'mesero@demo.com': 'mesero123',
-  'cocinero@demo.com': 'cocinero123',
-};
-
-const SUPERADMIN_DEMO = {
-  email: 'superadmin@restauflow.com',
-  password: 'superadmin123',
-};
-
-function isDemoLogin(email: string, password: string): Usuario | null {
-  const expected = DEMO_PASSWORDS[email];
-  if (expected && expected === password) {
-    return DEMO_USERS[email] ?? null;
-  }
-  return null;
-}
-
-function isSuperAdminDemo(email: string, password: string): boolean {
-  return email === SUPERADMIN_DEMO.email && password === SUPERADMIN_DEMO.password;
-}
-
 interface AuthState {
   usuario: Usuario | null;
   isAuthenticated: boolean;
@@ -95,6 +23,30 @@ interface AuthState {
   isAdminOrGerente: () => boolean;
 }
 
+function normalizeRol(rol: unknown): UserRole {
+  const r = String(rol ?? '').toLowerCase();
+  const valid: UserRole[] = ['admin', 'gerente', 'cajero', 'mesero', 'cocinero', 'repartidor', 'almacen'];
+  return (valid.includes(r as UserRole) ? r : 'admin') as UserRole;
+}
+
+function normalizeUsuario(raw: any): Usuario {
+  return {
+    id: Number(raw?.id ?? raw?.id_usuario ?? 0),
+    tenant_id: String(raw?.tenant_id ?? ''),
+    local_id: Number(raw?.local_id ?? 0),
+    nombre: String(raw?.nombre ?? ''),
+    apellidos: String(raw?.apellidos ?? ''),
+    correo: String(raw?.correo ?? ''),
+    rol: normalizeRol(raw?.rol),
+    avatar_url: raw?.avatar_url ?? null,
+    color_identificacion: String(raw?.color_identificacion ?? '#0d9488'),
+    activo: Boolean(raw?.activo ?? true),
+    ultimo_acceso: raw?.ultimo_acceso ?? raw?.ultimo_login ?? null,
+    creado_en: String(raw?.creado_en ?? raw?.created_at ?? ''),
+    actualizado_en: String(raw?.actualizado_en ?? raw?.updated_at ?? ''),
+  };
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -104,63 +56,51 @@ export const useAuthStore = create<AuthState>()(
       isLoading: true,
       isDemoMode: false,
 
-      login: async (email, password, _tenant_slug, rememberMe) => {
-        // Check demo credentials first (no API call)
-        const demoUser = isDemoLogin(email, password);
-        if (demoUser) {
-          set({ usuario: demoUser, isAuthenticated: true, isSuperAdmin: false, isDemoMode: true });
-          return;
-        }
-        // Real API call
-        await authRepository.login({ correo: email, contrasena: password, remember_me: rememberMe ?? false });
-        const perfil = await authRepository.miPerfil();
+      login: async (email, password, tenant_slug, rememberMe) => {
+        await authRepository.login({ correo: email, contrasena: password, tenant_slug, remember_me: rememberMe ?? false });
+        const perfil = normalizeUsuario(await authRepository.miPerfil());
         set({ usuario: perfil, isAuthenticated: true, isSuperAdmin: false, isDemoMode: false });
       },
 
       loginPin: async (tenant_slug, pin) => {
         await authRepository.loginPin({ tenant_slug, pin });
-        const perfil = await authRepository.miPerfil();
+        const perfil = normalizeUsuario(await authRepository.miPerfil());
         set({ usuario: perfil, isAuthenticated: true, isSuperAdmin: false, isDemoMode: false });
       },
 
       loginSuperAdmin: async (email, password) => {
-        // Check demo superadmin first
-        if (isSuperAdminDemo(email, password)) {
-          set({ isAuthenticated: true, isSuperAdmin: true, usuario: null, isDemoMode: true });
-          return;
-        }
         await authRepository.loginSuperAdmin({ email, password });
         set({ isAuthenticated: true, isSuperAdmin: true, usuario: null, isDemoMode: false });
       },
 
       logout: async () => {
-        const { isDemoMode } = get();
-        if (!isDemoMode) {
-          try { await authRepository.logout(); } catch { /* ignore */ }
-        }
+        try { await authRepository.logout(); } catch { /* ignore */ }
         set({ usuario: null, isAuthenticated: false, isSuperAdmin: false, isDemoMode: false });
       },
 
-      checkAuth: async () => {
-        const { isDemoMode, isAuthenticated } = get();
-        // In demo mode, keep existing state — no API call needed
-        if (isDemoMode && isAuthenticated) {
-          set({ isLoading: false });
-          return;
-        }
-        set({ isLoading: true });
-        try {
-          const perfil = await authRepository.miPerfil();
-          set({ usuario: perfil, isAuthenticated: true, isLoading: false });
-        } catch {
-          set({ usuario: null, isAuthenticated: false, isLoading: false });
-        }
-      },
+	checkAuth: async () => {
+    const { isAuthenticated, isSuperAdmin } = get();
+    if (isSuperAdmin && isAuthenticated) {
+			set({ isLoading: false });
+			return;
+		}
+		if (!isAuthenticated) {
+			set({ isLoading: false });
+			return;
+		}
+		set({ isLoading: true });
+		try {
+      const perfil = normalizeUsuario(await authRepository.miPerfil());
+			set({ usuario: perfil, isAuthenticated: true, isLoading: false });
+		} catch {
+			set({ usuario: null, isAuthenticated: false, isLoading: false });
+		}
+	},
 
       hasRole: (...roles) => {
         const { usuario } = get();
         if (!usuario) return false;
-        return roles.includes(usuario.rol as UserRole);
+        return roles.includes(normalizeRol(usuario.rol));
       },
 
       isAdminOrGerente: () => get().hasRole('admin', 'gerente'),
@@ -170,8 +110,8 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         isSuperAdmin: state.isSuperAdmin,
-        isDemoMode: state.isDemoMode,
-        usuario: state.isDemoMode ? state.usuario : null,
+        isDemoMode: false,
+        usuario: null,
       }),
     },
   ),

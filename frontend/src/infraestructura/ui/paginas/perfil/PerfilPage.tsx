@@ -1,12 +1,12 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { User, Mail, Lock, Palette, Camera, Save, Shield, Clock, ChefHat } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/infraestructura/store/useAuthStore';
 import { Button, Card, CardHeader, Input, Tabs } from '@/infraestructura/ui/componentes/comunes';
 
-// ═══════════════════════════════════════════════════════════
-// Perfil — configuración personal del usuario
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Perfil â€” configuraciÃ³n personal del usuario
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 const AVATARS = [
   'https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos',
@@ -29,7 +29,7 @@ const rolLabels: Record<string, string> = {
   cocinero: 'Cocinero',
   cajero: 'Cajero',
   repartidor: 'Repartidor',
-  almacen: 'Almacén',
+  almacen: 'AlmacÃ©n',
 };
 
 export default function PerfilPage() {
@@ -62,18 +62,18 @@ export default function PerfilPage() {
 
   const handlePasswordChange = async () => {
     if (passwordForm.nueva !== passwordForm.confirmar) {
-      toast.error('Las contraseñas no coinciden');
+      toast.error('Las contraseÃ±as no coinciden');
       return;
     }
     if (passwordForm.nueva.length < 6) {
-      toast.error('La contraseña debe tener al menos 6 caracteres');
+      toast.error('La contraseÃ±a debe tener al menos 6 caracteres');
       return;
     }
     setSaving(true);
     await new Promise((r) => setTimeout(r, 800));
     setSaving(false);
     setPasswordForm({ actual: '', nueva: '', confirmar: '' });
-    toast.success('Contraseña actualizada');
+    toast.success('ContraseÃ±a actualizada');
   };
 
   const tabs = [
@@ -128,10 +128,10 @@ export default function PerfilPage() {
 
       <Tabs tabs={tabs} activeTab={tab} onChange={setTab} />
 
-      {/* ── Datos personales ── */}
+      {/* â”€â”€ Datos personales â”€â”€ */}
       {tab === 'datos' && (
         <Card>
-          <CardHeader title="Información Personal" description="Actualiza tus datos de perfil" />
+          <CardHeader title="InformaciÃ³n Personal" description="Actualiza tus datos de perfil" />
           <div className="p-6 space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <Input
@@ -148,7 +148,7 @@ export default function PerfilPage() {
               />
             </div>
             <Input
-              label="Correo electrónico"
+              label="Correo electrÃ³nico"
               type="email"
               placeholder="correo@ejemplo.com"
               value={form.correo}
@@ -156,18 +156,18 @@ export default function PerfilPage() {
             />
 
             {/* Role info (read-only) */}
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <div className="grid gap-4 sm:grid-cols-3">
                 <div>
                   <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Rol</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <p className="mt-1 text-sm font-semibold text-slate-900 flex items-center gap-1.5">
                     <ChefHat className="h-4 w-4 text-teal-500" />
                     {rolLabels[usuario?.rol || 'admin']}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Último acceso</p>
-                  <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Ãšltimo acceso</p>
+                  <p className="mt-1 text-sm text-slate-700 flex items-center gap-1.5">
                     <Clock className="h-4 w-4 text-slate-400" />
                     {usuario?.ultimo_acceso
                       ? new Date(usuario.ultimo_acceso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -177,7 +177,7 @@ export default function PerfilPage() {
                 </div>
                 <div>
                   <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Miembro desde</p>
-                  <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+                  <p className="mt-1 text-sm text-slate-700">
                     {usuario?.creado_en
                       ? new Date(usuario.creado_en).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
                       : 'N/A'
@@ -196,32 +196,32 @@ export default function PerfilPage() {
         </Card>
       )}
 
-      {/* ── Seguridad ── */}
+      {/* â”€â”€ Seguridad â”€â”€ */}
       {tab === 'seguridad' && (
         <Card>
-          <CardHeader title="Cambiar Contraseña" description="Mantén tu cuenta segura" />
+          <CardHeader title="Cambiar ContraseÃ±a" description="MantÃ©n tu cuenta segura" />
           <form onSubmit={(e) => { e.preventDefault(); handlePasswordChange(); }} className="p-6 space-y-4" autoComplete="off">
             <Input
-              label="Contraseña actual"
+              label="ContraseÃ±a actual"
               type="password"
-              placeholder="••••••••"
+              placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
               autoComplete="current-password"
               value={passwordForm.actual}
               onChange={(e) => setPasswordForm({ ...passwordForm, actual: e.target.value })}
             />
             <div className="grid gap-4 sm:grid-cols-2">
               <Input
-                label="Nueva contraseña"
+                label="Nueva contraseÃ±a"
                 type="password"
-                placeholder="Mínimo 6 caracteres"
+                placeholder="MÃ­nimo 6 caracteres"
                 autoComplete="new-password"
                 value={passwordForm.nueva}
                 onChange={(e) => setPasswordForm({ ...passwordForm, nueva: e.target.value })}
               />
               <Input
-                label="Confirmar contraseña"
+                label="Confirmar contraseÃ±a"
                 type="password"
-                placeholder="Repetir contraseña"
+                placeholder="Repetir contraseÃ±a"
                 autoComplete="new-password"
                 value={passwordForm.confirmar}
                 onChange={(e) => setPasswordForm({ ...passwordForm, confirmar: e.target.value })}
@@ -229,25 +229,25 @@ export default function PerfilPage() {
             </div>
 
             {/* Security tips */}
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
-              <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-400">Consejos de seguridad</h4>
-              <ul className="mt-2 space-y-1 text-xs text-amber-700 dark:text-amber-300">
-                <li>• Usa al menos 8 caracteres con letras, números y símbolos</li>
-                <li>• No reutilices contraseñas de otros servicios</li>
-                <li>• Cambia tu contraseña periódicamente</li>
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <h4 className="text-sm font-semibold text-amber-800">Consejos de seguridad</h4>
+              <ul className="mt-2 space-y-1 text-xs text-amber-700">
+                <li>â€¢ Usa al menos 8 caracteres con letras, nÃºmeros y sÃ­mbolos</li>
+                <li>â€¢ No reutilices contraseÃ±as de otros servicios</li>
+                <li>â€¢ Cambia tu contraseÃ±a periÃ³dicamente</li>
               </ul>
             </div>
 
             <div className="flex justify-end pt-2">
               <Button type="submit" isLoading={saving}>
-                <Lock className="h-4 w-4" /> Actualizar contraseña
+                <Lock className="h-4 w-4" /> Actualizar contraseÃ±a
               </Button>
             </div>
           </form>
         </Card>
       )}
 
-      {/* ── Apariencia ── */}
+      {/* â”€â”€ Apariencia â”€â”€ */}
       {tab === 'apariencia' && (
         <div className="space-y-6">
           {/* Avatar selector */}
@@ -261,8 +261,8 @@ export default function PerfilPage() {
                     onClick={() => setForm({ ...form, avatar_url: url })}
                     className={`rounded-xl border-2 p-1 transition-all ${
                       form.avatar_url === url
-                        ? 'border-teal-500 shadow-lg shadow-teal-100 scale-110 dark:shadow-teal-900/30'
-                        : 'border-slate-200 hover:border-teal-300 dark:border-slate-700'
+                        ? 'border-teal-500 shadow-lg shadow-teal-100 scale-110'
+                        : 'border-slate-200 hover:border-teal-300'
                     }`}
                   >
                     <img src={url} alt="Avatar" className="h-12 w-12 rounded-lg" />
@@ -274,7 +274,7 @@ export default function PerfilPage() {
 
           {/* Color selector */}
           <Card>
-            <CardHeader title="Color de identificación" description="Los demás te verán con este color en el sistema" />
+            <CardHeader title="Color de identificaciÃ³n" description="Los demÃ¡s te verÃ¡n con este color en el sistema" />
             <div className="p-6">
               <div className="flex flex-wrap gap-3">
                 {COLORS.map((color) => (
@@ -306,3 +306,4 @@ export default function PerfilPage() {
     </div>
   );
 }
+

@@ -53,7 +53,7 @@ func RateLimit(redisClient *redis.Client, maxRequests int, ventana time.Duration
 			c.Header("Retry-After", fmt.Sprintf("%d", int(ventana.Seconds())))
 			c.Header("X-RateLimit-Limit", fmt.Sprintf("%d", maxRequests))
 			c.Header("X-RateLimit-Remaining", "0")
-			utils.TooManyRequests(c, "Demasiadas solicitudes, intente más tarde")
+			utils.ErrorResponse(c, http.StatusTooManyRequests, "Demasiadas solicitudes, intente más tarde", nil)
 			c.Abort()
 			return
 		}

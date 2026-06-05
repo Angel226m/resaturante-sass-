@@ -10,6 +10,7 @@ interface UIState {
   sidebarCollapsed: boolean;
   localSeleccionadoId: string | null;
   theme: 'light' | 'dark';
+  notifications: AppNotification[];
 
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
@@ -17,15 +18,20 @@ interface UIState {
   setLocalSeleccionado: (id: string | null) => void;
   setTheme: (theme: 'light' | 'dark') => void;
   toggleTheme: () => void;
+  pushNotification: (notification: Omit<AppNotification, 'id' | 'createdAt' | 'read'> & { id?: string }) => void;
+  markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
+  dismissNotification: (id: string) => void;
+  clearNotifications: () => void;
 }
 
-/** Resolves initial theme: persisted → system preference → light */
-function resolveInitialTheme(): 'light' | 'dark' {
-  try {
-    const stored = JSON.parse(localStorage.getItem('restauflow-ui') || '{}');
-    if (stored?.state?.theme) return stored.state.theme;
-  } catch (_) {}
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning';
+  createdAt: string;
+  read: boolean;
 }
 
 export const useUIStore = create<UIState>()(
@@ -34,21 +40,45 @@ export const useUIStore = create<UIState>()(
       sidebarOpen: false,
       sidebarCollapsed: false,
       localSeleccionadoId: null,
-      theme: resolveInitialTheme(),
+      theme: 'light',
+      notifications: [],
 
       toggleSidebar: () => set({ sidebarOpen: !get().sidebarOpen }),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       toggleCollapsed: () => set({ sidebarCollapsed: !get().sidebarCollapsed }),
       setLocalSeleccionado: (id) => set({ localSeleccionadoId: id }),
-      setTheme: (theme) => {
-        document.documentElement.classList.toggle('dark', theme === 'dark');
-        set({ theme });
+      setTheme: () => {
+        document.documentElement.classList.remove('dark');
+        set({ theme: 'light' });
       },
       toggleTheme: () => {
-        const next = get().theme === 'light' ? 'dark' : 'light';
-        document.documentElement.classList.toggle('dark', next === 'dark');
-        set({ theme: next });
+        document.documentElement.classList.remove('dark');
+        set({ theme: 'light' });
       },
+      pushNotification: (notification) => set((state) => {
+        const id = notification.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const next: AppNotification = {
+          id,
+          title: notification.title,
+          message: notification.message,
+          type: notification.type,
+          createdAt: new Date().toISOString(),
+          read: false,
+        };
+
+        const deduped = state.notifications.filter((n) => n.id !== id);
+        return { notifications: [next, ...deduped].slice(0, 50) };
+      }),
+      markNotificationRead: (id) => set((state) => ({
+        notifications: state.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      })),
+      markAllNotificationsRead: () => set((state) => ({
+        notifications: state.notifications.map((n) => ({ ...n, read: true })),
+      })),
+      dismissNotification: (id) => set((state) => ({
+        notifications: state.notifications.filter((n) => n.id !== id),
+      })),
+      clearNotifications: () => set({ notifications: [] }),
     }),
     {
       name: 'restauflow-ui',
@@ -56,6 +86,7 @@ export const useUIStore = create<UIState>()(
         sidebarCollapsed: state.sidebarCollapsed,
         localSeleccionadoId: state.localSeleccionadoId,
         theme: state.theme,
+        notifications: state.notifications,
       }),
     },
   ),

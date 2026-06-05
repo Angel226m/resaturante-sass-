@@ -1,6 +1,6 @@
 // ── Órdenes ──
 export type TipoOrden = 'mesa' | 'para_llevar' | 'delivery';
-export type EstadoOrden = 'pendiente' | 'en_preparacion' | 'lista' | 'entregada' | 'cancelada';
+export type EstadoOrden = 'nueva' | 'en_cocina' | 'listo' | 'servida' | 'pagada' | 'cancelada' | 'pendiente' | 'en_preparacion' | 'lista' | 'entregada';
 
 export interface Orden {
   id: number;

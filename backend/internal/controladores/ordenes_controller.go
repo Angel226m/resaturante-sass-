@@ -1,6 +1,8 @@
 package controladores
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/restauflow/backend/internal/entidades/ordenes"
 	"github.com/restauflow/backend/internal/middleware"
@@ -25,6 +27,8 @@ func NuevoOrdenesController(svc *servicios.OrdenesService) *OrdenesController {
 func (c *OrdenesController) ListarOrdenes(ctx *gin.Context) {
 	tenantID := middleware.ObtenerTenantID(ctx)
 	localID := middleware.ObtenerLocalID(ctx)
+	usuarioID := middleware.ObtenerUsuarioID(ctx)
+	rol := middleware.ObtenerRol(ctx)
 	pagina, porPagina := obtenerPaginacion(ctx)
 	filtros := ordenes.FiltrosOrden{
 		LocalID:    localID,
@@ -37,6 +41,18 @@ func (c *OrdenesController) ListarOrdenes(ctx *gin.Context) {
 		Pagina:     pagina,
 		PorPagina:  porPagina,
 	}
+
+	if strings.EqualFold(rol, "mesero") {
+		if usuarioID > 0 {
+			filtros.MeseroID = &usuarioID
+		}
+
+		// Mesero no debe consultar pedidos de delivery desde este endpoint.
+		if filtros.TipoOrden == "" || strings.EqualFold(filtros.TipoOrden, "delivery") {
+			filtros.TipoOrden = "mesa"
+		}
+	}
+
 	ords, total, err := c.Service.ListarOrdenes(tenantID, filtros)
 	if err != nil {
 		utils.InternalError(ctx, "error al listar órdenes", err)
@@ -118,7 +134,9 @@ func (c *OrdenesController) ContarOrdenesActivas(ctx *gin.Context) {
 
 func (c *OrdenesController) ListarTicketsCocina(ctx *gin.Context) {
 	tenantID := middleware.ObtenerTenantID(ctx)
+	localID := middleware.ObtenerLocalID(ctx)
 	filtros := ordenes.FiltrosTicketCocina{
+		LocalID:        localID,
 		Estado:         ctx.Query("estado"),
 		EstacionCocina: ctx.Query("estacion_cocina"),
 		Prioridad:      parseOptionalInt(ctx.Query("prioridad")),
@@ -134,9 +152,9 @@ func (c *OrdenesController) ListarTicketsCocina(ctx *gin.Context) {
 func (c *OrdenesController) CrearTicketCocina(ctx *gin.Context) {
 	tenantID := middleware.ObtenerTenantID(ctx)
 	var body struct {
-		OrdenID    int64  `json:"orden_id"     validate:"required"`
-		Estacion   string `json:"estacion"     validate:"required"`
-		Prioridad  int    `json:"prioridad"`
+		OrdenID   int64  `json:"orden_id"     validate:"required"`
+		Estacion  string `json:"estacion"     validate:"required"`
+		Prioridad int    `json:"prioridad"`
 	}
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		utils.BadRequest(ctx, "datos inválidos")

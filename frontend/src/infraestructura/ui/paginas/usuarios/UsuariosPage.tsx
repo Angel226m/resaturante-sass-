@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { UserCog, Plus, Shield, Mail, Pencil, Trash2, Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -11,15 +11,15 @@ import { Button, Badge, Card, Modal, Input, Select, DataTable } from '@/infraest
 import { formatDateTime, getInitials } from '@/compartidos/utilidades';
 import type { Column } from '@/infraestructura/ui/componentes/comunes/DataTable';
 
-// ═══════════════════════════════════════════════════════════
-// Usuarios — CRUD de usuarios con asignación de roles
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Usuarios â€” CRUD de usuarios con asignaciÃ³n de roles
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 const usuarioSchema = z.object({
   nombre: z.string().min(1, 'Requerido'),
   apellidos: z.string().min(1, 'Requerido'),
-  correo: z.string().email('Email inválido'),
-  contrasena: z.string().min(6, 'Mínimo 6 caracteres').optional().or(z.literal('')),
+  correo: z.string().email('Email invÃ¡lido'),
+  contrasena: z.string().min(6, 'MÃ­nimo 6 caracteres').optional().or(z.literal('')),
   rol: z.string().min(1, 'Seleccione rol'),
   local_id: z.coerce.number().optional(),
   activo: z.boolean().optional(),
@@ -93,7 +93,7 @@ export default function UsuariosPage() {
             {getInitials(`${u.nombre} ${u.apellidos}`)}
           </div>
           <div>
-            <p className="font-medium text-slate-900 dark:text-white">{u.nombre} {u.apellidos}</p>
+            <p className="font-medium text-slate-900">{u.nombre} {u.apellidos}</p>
             <p className="text-xs text-slate-500 flex items-center gap-1"><Mail className="h-3 w-3" />{u.correo}</p>
           </div>
         </div>
@@ -116,9 +116,9 @@ export default function UsuariosPage() {
     },
     {
       key: 'ultimo_acceso',
-      label: 'Último Acceso',
+      label: 'Ãšltimo Acceso',
       sortable: true,
-      render: (u) => u.ultimo_acceso ? <span className="text-xs text-slate-500">{formatDateTime(u.ultimo_acceso)}</span> : <span className="text-slate-400">—</span>,
+      render: (u) => u.ultimo_acceso ? <span className="text-xs text-slate-500">{formatDateTime(u.ultimo_acceso)}</span> : <span className="text-slate-400">â€”</span>,
     },
     {
       key: 'creado_en',
@@ -132,7 +132,7 @@ export default function UsuariosPage() {
       render: (u) => (
         <div className="flex gap-1">
           <Button size="sm" variant="ghost" onClick={() => openEdit(u)}><Pencil className="h-4 w-4" /></Button>
-          <Button size="sm" variant="ghost" onClick={() => { if (confirm('¿Eliminar usuario?')) eliminar.mutate(String(u.id)); }}><Trash2 className="h-4 w-4 text-red-500" /></Button>
+          <Button size="sm" variant="ghost" onClick={() => { if (confirm('Â¿Eliminar usuario?')) eliminar.mutate(String(u.id)); }}><Trash2 className="h-4 w-4 text-red-500" /></Button>
         </div>
       ),
     },
@@ -142,7 +142,7 @@ export default function UsuariosPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <UserCog className="h-7 w-7 text-teal-600" /> Usuarios
           </h1>
           <p className="text-slate-500">{usuarios.length} usuarios registrados</p>
@@ -157,9 +157,9 @@ export default function UsuariosPage() {
         {ROLES.map(({ value, label }) => {
           const count = usuarios.filter((u: Usuario) => u.rol === value).length;
           return (
-            <div key={value} className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 shadow-sm border border-slate-100 dark:bg-slate-800 dark:border-slate-700">
+            <div key={value} className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 shadow-sm border border-slate-100">
               <Badge variant={(rolColor[value] || 'default') as any} dot>{label}</Badge>
-              <span className="text-lg font-bold text-slate-900 dark:text-white">{count}</span>
+              <span className="text-lg font-bold text-slate-900">{count}</span>
             </div>
           );
         })}
@@ -186,7 +186,7 @@ export default function UsuariosPage() {
           <Input label="Email" type="email" {...form.register('correo')} error={form.formState.errors.correo?.message} leftIcon={<Mail className="h-4 w-4" />} />
           <div className="relative">
             <Input
-              label={editing ? 'Nueva Contraseña (dejar vacío para no cambiar)' : 'Contraseña'}
+              label={editing ? 'Nueva ContraseÃ±a (dejar vacÃ­o para no cambiar)' : 'ContraseÃ±a'}
               type={showPassword ? 'text' : 'password'}
               {...form.register('contrasena')}
               error={form.formState.errors.contrasena?.message}
@@ -212,3 +212,4 @@ export default function UsuariosPage() {
     </div>
   );
 }
+

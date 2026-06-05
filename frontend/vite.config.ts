@@ -12,6 +12,26 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    middlewareMode: false,
+    headers: {
+      // CSP: Allow inline scripts (needed for theme init), external scripts, and API
+      'Content-Security-Policy': 
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' blob:; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com data:; " +
+        "img-src 'self' data: blob:; " +
+        "connect-src 'self' ws: wss: http://localhost:* https://localhost:*; " +
+        "worker-src 'self' blob:; " +
+        "frame-ancestors 'none'; " +
+        "base-uri 'self'; " +
+        "form-action 'self'",
+      'X-Frame-Options': 'DENY',
+      'X-Content-Type-Options': 'nosniff',
+      'X-XSS-Protection': '0',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8080',

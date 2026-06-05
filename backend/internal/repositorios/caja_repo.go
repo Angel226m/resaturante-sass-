@@ -28,8 +28,8 @@ func (r *CajaRepo) ObtenerTurnoActivo(tenantID string, localID int, usuarioID in
 			   t.monto_cierre, t.monto_esperado, t.diferencia,
 			   t.total_ventas, t.total_efectivo, t.total_tarjeta, t.total_otros,
 			   t.cantidad_ordenes, t.estado, t.fecha_apertura, t.fecha_cierre,
-			   t.observaciones, t.created_at,
-			   COALESCE(u.nombres, '') as nombre_usuario
+		COALESCE(t.observaciones, ''), t.created_at,
+			   COALESCE(u.nombre || ' ' || u.apellidos, '') as nombre_usuario
 		FROM turnos_caja t
 		LEFT JOIN usuarios u ON u.id = t.usuario_id AND u.tenant_id = t.tenant_id
 		WHERE t.tenant_id = $1 AND t.local_id = $2 AND t.usuario_id = $3 AND t.estado = 'abierto'
@@ -62,7 +62,7 @@ func (r *CajaRepo) AbrirTurno(tenantID string, usuarioID int64, req caja.AbrirTu
 		RETURNING id, tenant_id, local_id, usuario_id, monto_apertura, monto_cierre,
 			monto_esperado, diferencia, total_ventas, total_efectivo, total_tarjeta,
 			total_otros, cantidad_ordenes, estado, fecha_apertura, fecha_cierre,
-			observaciones, created_at
+			COALESCE(observaciones, ''), created_at
 	`, tenantID, req.LocalID, usuarioID, req.MontoApertura,
 	).Scan(&t.ID, &t.TenantID, &t.LocalID, &t.UsuarioID, &t.MontoApertura,
 		&t.MontoCierre, &t.MontoEsperado, &t.Diferencia,
@@ -256,7 +256,7 @@ func (r *CajaRepo) ListarPagosPorTurno(tenantID string, turnoID int64) ([]caja.P
 		SELECT p.id, p.tenant_id, p.orden_id, p.turno_caja_id, p.monto_total, p.monto_pagado,
 			   p.vuelto, p.propina, p.estado, p.usuario_id, p.deleted_at, p.created_at, p.updated_at,
 			   COALESCE(o.numero_orden, '') as numero_orden,
-			   COALESCE(u.nombres, '') as nombre_usuario
+			   COALESCE(u.nombre || ' ' || u.apellidos, '') as nombre_usuario
 		FROM pagos p
 		LEFT JOIN ordenes o ON o.id = p.orden_id AND o.tenant_id = p.tenant_id
 		LEFT JOIN usuarios u ON u.id = p.usuario_id AND u.tenant_id = p.tenant_id
@@ -306,7 +306,9 @@ func (r *CajaRepo) CrearComprobante(tenantID string, req caja.NuevoComprobanteRe
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 		RETURNING id, tenant_id, orden_id, pago_id, tipo_comprobante, serie, numero,
 			fecha_emision, ruc_cliente, razon_social, direccion_fiscal,
-			subtotal, igv, total, estado, pdf_url, hash_sunat, deleted_at, created_at
+			subtotal, igv, total, estado,
+			COALESCE(pdf_url, ''), COALESCE(hash_sunat, ''),
+			deleted_at, created_at
 	`, tenantID, req.OrdenID, req.PagoID, req.TipoComprobante, serie, numero,
 		req.RUCCliente, req.RazonSocial, req.DireccionFiscal, subtotal, igv, total,
 	).Scan(&comp.ID, &comp.TenantID, &comp.OrdenID, &comp.PagoID,

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -23,6 +24,8 @@ type Config struct {
 	GinMode          string
 	ServerPort       string
 	ServerHost       string
+	AllowedHosts     []string
+	MaxRequestBytes  int64
 	DBHost           string
 	DBPort           string
 	DBName           string
@@ -38,17 +41,34 @@ type Config struct {
 	EncryptionKey    string
 	ResendAPIKey     string
 	EnableWS         bool
+	CORSOrigins      []string
 }
 
 // CargarConfig carga la configuración desde variables de entorno
 func CargarConfig() *Config {
 	enableWS, _ := strconv.ParseBool(getEnv("ENABLE_WEBSOCKETS", "true"))
+	maxRequestBytes, err := strconv.ParseInt(getEnv("MAX_REQUEST_BODY_BYTES", "1048576"), 10, 64)
+	if err != nil || maxRequestBytes <= 0 {
+		maxRequestBytes = 1048576 // 1MB
+	}
+
+	corsOrigins := parseCSV(getEnv("CORS_ORIGIN", "http://localhost:5173"))
+	if len(corsOrigins) == 0 {
+		corsOrigins = []string{"http://localhost:5173"}
+	}
+
+	allowedHosts := parseCSV(getEnv("ALLOWED_HOSTS", "localhost,127.0.0.1,backend,nginx"))
+	if len(allowedHosts) == 0 {
+		allowedHosts = []string{"localhost", "127.0.0.1", "backend", "nginx"}
+	}
 
 	return &Config{
 		Env:              getEnv("ENV", "development"),
 		GinMode:          getEnv("GIN_MODE", "debug"),
 		ServerPort:       getEnv("SERVER_PORT", "8080"),
 		ServerHost:       getEnv("SERVER_HOST", "0.0.0.0"),
+		AllowedHosts:     allowedHosts,
+		MaxRequestBytes:  maxRequestBytes,
 		DBHost:           getEnv("DB_HOST", "db"),
 		DBPort:           getEnv("DB_PORT", "5432"),
 		DBName:           getEnv("DB_NAME", "restauflow"),
@@ -64,6 +84,7 @@ func CargarConfig() *Config {
 		EncryptionKey:    getEnv("ENCRYPTION_KEY", ""),
 		ResendAPIKey:     getEnv("RESEND_API_KEY", ""),
 		EnableWS:         enableWS,
+		CORSOrigins:      corsOrigins,
 	}
 }
 
@@ -124,4 +145,16 @@ func getEnv(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func parseCSV(value string) []string {
+	parts := strings.Split(value, ",")
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
 }

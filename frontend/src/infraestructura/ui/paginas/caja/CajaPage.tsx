@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Banknote, DollarSign, Plus, Receipt, Clock, CheckCircle2, XCircle, CreditCard, Wallet, ArrowRightLeft } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -11,13 +11,11 @@ import { Button, Badge, Card, CardHeader, Modal, Input, Select, DataTable, StatC
 import { formatCurrency, formatDateTime } from '@/compartidos/utilidades';
 import type { Column } from '@/infraestructura/ui/componentes/comunes/DataTable';
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// Caja â€” turnos, pagos, comprobantes
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Caja - turnos, pagos, comprobantes
 
 const pagoSchema = z.object({
   orden_id: z.string().min(1, 'Requerido'),
-  metodo_pago_id: z.string().min(1, 'Seleccione mÃ©todo'),
+  metodo_pago_id: z.string().min(1, 'Seleccione metodo'),
   monto: z.coerce.number().min(0.01, 'Min 0.01'),
   referencia: z.string().optional(),
 });
@@ -80,14 +78,14 @@ export default function CajaPage() {
   const tabs = [
     { id: 'turno', label: 'Turno Actual', icon: <Clock className="h-4 w-4" /> },
     { id: 'pagos', label: 'Pagos', icon: <DollarSign className="h-4 w-4" />, count: pagos.length },
-    { id: 'metodos', label: 'MÃ©todos de Pago', icon: <CreditCard className="h-4 w-4" />, count: metodos.length },
+    { id: 'metodos', label: 'Metodos de Pago', icon: <CreditCard className="h-4 w-4" />, count: metodos.length },
   ];
 
   const pagoColumns: Column<Pago>[] = [
     { key: 'created_at', label: 'Fecha', sortable: true, render: (p) => formatDateTime(p.creado_en) },
     { key: 'orden_id', label: 'Orden', render: (p) => <span className="font-mono text-xs">#{String(p.orden_id).slice(0, 8)}</span> },
-    { key: 'monto', label: 'Monto', sortable: true, render: (p) => <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(p.monto_total)}</span> },
-    { key: 'metodo_pago_id', label: 'MÃ©todo', render: (p) => {
+    { key: 'monto', label: 'Monto', sortable: true, render: (p) => <span className="font-bold text-slate-900">{formatCurrency(p.monto_total)}</span> },
+    { key: 'metodo_pago_id', label: 'Metodo', render: (p) => {
       const m = metodos.find((met: MetodoPago) => met.id === (p.detalle?.[0]?.metodo_pago_id ?? 0));
       return <Badge variant="default">{m?.nombre || 'N/A'}</Badge>;
     }},
@@ -95,7 +93,7 @@ export default function CajaPage() {
       <Badge variant={p.estado === 'completado' ? 'success' : p.estado === 'anulado' ? 'danger' : 'warning'} dot>{p.estado}</Badge>
     )},
     { key: 'id', label: '', render: (p) => p.estado !== 'anulado' && (
-      <Button size="sm" variant="danger" onClick={() => { if (confirm('Â¿Anular pago?')) anularPago.mutate(String(p.id)); }}>
+      <Button size="sm" variant="danger" onClick={() => { if (confirm('¿Anular pago?')) anularPago.mutate(String(p.id)); }}>
         <XCircle className="h-3.5 w-3.5" />
       </Button>
     )},
@@ -111,10 +109,10 @@ export default function CajaPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Banknote className="h-7 w-7 text-teal-600" /> Caja
           </h1>
-          <p className="text-slate-500">GestiÃ³n de turnos, pagos y comprobantes</p>
+          <p className="text-slate-500">Gestion de turnos, pagos y comprobantes</p>
         </div>
         <div className="flex gap-2">
           {turnoActivo ? (
@@ -164,7 +162,7 @@ export default function CajaPage() {
                 <div className="p-6 grid gap-4 sm:grid-cols-2">
                   <div>
                     <p className="text-xs text-slate-500">Apertura</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">{formatDateTime(turnoActivo.creado_en)}</p>
+                    <p className="text-sm font-medium text-slate-900">{formatDateTime(turnoActivo.creado_en)}</p>
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Estado</p>
@@ -172,14 +170,14 @@ export default function CajaPage() {
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Cajero</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">{'Cajero actual'}</p>
+                    <p className="text-sm font-medium text-slate-900">{'Cajero actual'}</p>
                   </div>
                 </div>
               </Card>
 
-              {/* Resumen por mÃ©todo de pago */}
+              {/* Resumen por metodo de pago */}
               <Card>
-                <CardHeader title="Resumen por MÃ©todo de Pago" />
+                <CardHeader title="Resumen por Metodo de Pago" />
                 <div className="p-6">
                   <div className="space-y-3">
                     {metodos.map((met: MetodoPago) => {
@@ -189,9 +187,9 @@ export default function CajaPage() {
                         <div key={met.id} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <CreditCard className="h-4 w-4 text-slate-400" />
-                            <span className="text-sm text-slate-700 dark:text-slate-300">{met.nombre}</span>
+                            <span className="text-sm text-slate-700">{met.nombre}</span>
                           </div>
-                          <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(total)}</span>
+                          <span className="font-bold text-slate-900">{formatCurrency(total)}</span>
                         </div>
                       );
                     })}
@@ -215,22 +213,22 @@ export default function CajaPage() {
         </Card>
       )}
 
-      {/* --- TAB: MÃ©todos de Pago --- */}
+      {/* --- TAB: Metodos de Pago --- */}
       {tab === 'metodos' && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {metodos.length === 0 ? (
             <div className="col-span-full">
-              <EmptyState icon={<CreditCard className="h-12 w-12" />} title="Sin mÃ©todos de pago" description="Configure los mÃ©todos de pago desde el backend" />
+              <EmptyState icon={<CreditCard className="h-12 w-12" />} title="Sin metodos de pago" description="Configure los metodos de pago desde el backend" />
             </div>
           ) : (
             metodos.map((met: MetodoPago) => (
               <Card key={met.id}>
                 <div className="flex items-center gap-4 p-5">
-                  <div className="rounded-xl bg-teal-50 p-3 dark:bg-teal-900/20">
+                  <div className="rounded-xl bg-teal-50 p-3">
                     <CreditCard className="h-6 w-6 text-teal-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-900 dark:text-white">{met.nombre}</p>
+                    <p className="font-semibold text-slate-900">{met.nombre}</p>
                     <p className="text-xs text-slate-500">{met.tipo}</p>
                   </div>
                   <Badge variant={met.activo ? 'success' : 'danger'} className="ml-auto">{met.activo ? 'Activo' : 'Inactivo'}</Badge>
@@ -246,7 +244,7 @@ export default function CajaPage() {
         <form onSubmit={pagoForm.handleSubmit((d) => registrarPago.mutate(d))} className="space-y-4">
           <Input label="ID de Orden" {...pagoForm.register('orden_id')} error={pagoForm.formState.errors.orden_id?.message} />
           <Select
-            label="MÃ©todo de Pago"
+            label="Metodo de Pago"
             options={metodos.map((m: MetodoPago) => ({ value: String(m.id), label: m.nombre }))}
             {...pagoForm.register('metodo_pago_id')}
             error={pagoForm.formState.errors.metodo_pago_id?.message}
@@ -263,7 +261,7 @@ export default function CajaPage() {
       {/* Modal cerrar turno */}
       <Modal isOpen={showCierreModal} onClose={() => setShowCierreModal(false)} title="Cerrar Turno" size="md">
         <div className="space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-400">Ingrese el monto de cierre de caja para cerrar el turno actual.</p>
+          <p className="text-sm text-slate-600">Ingrese el monto de cierre de caja para cerrar el turno actual.</p>
           <Input
             type="number"
             step="0.01"
@@ -283,3 +281,4 @@ export default function CajaPage() {
     </div>
   );
 }
+

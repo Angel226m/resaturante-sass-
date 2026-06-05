@@ -4,6 +4,7 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+	"unicode"
 )
 
 // ==========================================
@@ -12,13 +13,13 @@ import (
 // ==========================================
 
 var (
-	regexCorreo   = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
-	regexCelular  = regexp.MustCompile(`^9\d{8}$`)
-	regexRUC      = regexp.MustCompile(`^(10|20)\d{9}$`)
-	regexDNI      = regexp.MustCompile(`^\d{8}$`)
-	regexSlug     = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
-	regexColor    = regexp.MustCompile(`^#[0-9A-Fa-f]{6}$`)
-	regexPin      = regexp.MustCompile(`^\d{4,6}$`)
+	regexCorreo  = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
+	regexCelular = regexp.MustCompile(`^9\d{8}$`)
+	regexRUC     = regexp.MustCompile(`^(10|20)\d{9}$`)
+	regexDNI     = regexp.MustCompile(`^\d{8}$`)
+	regexSlug    = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+	regexColor   = regexp.MustCompile(`^#[0-9A-Fa-f]{6}$`)
+	regexPin     = regexp.MustCompile(`^\d{4,6}$`)
 )
 
 // ValidarCorreo valida formato de correo electrónico
@@ -93,12 +94,49 @@ func ValidarColor(color string) error {
 
 // ValidarContrasena valida requisitos mínimos de contraseña
 func ValidarContrasena(contrasena string) error {
-	if len(contrasena) < 8 {
-		return errors.New("la contraseña debe tener al menos 8 caracteres")
+	if len(contrasena) < 10 {
+		return errors.New("la contraseña debe tener al menos 10 caracteres")
 	}
 	if len(contrasena) > 72 {
 		return errors.New("la contraseña no puede exceder 72 caracteres")
 	}
+
+	hasUpper := false
+	hasLower := false
+	hasDigit := false
+	hasSymbol := false
+
+	for _, char := range contrasena {
+		switch {
+		case unicode.IsUpper(char):
+			hasUpper = true
+		case unicode.IsLower(char):
+			hasLower = true
+		case unicode.IsDigit(char):
+			hasDigit = true
+		default:
+			hasSymbol = true
+		}
+	}
+
+	categories := 0
+	if hasUpper {
+		categories++
+	}
+	if hasLower {
+		categories++
+	}
+	if hasDigit {
+		categories++
+	}
+	if hasSymbol {
+		categories++
+	}
+
+	if categories < 3 {
+		return errors.New("la contraseña debe incluir al menos 3 de 4 categorías: mayúsculas, minúsculas, números y símbolos")
+	}
+
 	return nil
 }
 

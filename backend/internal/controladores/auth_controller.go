@@ -2,6 +2,7 @@ package controladores
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/restauflow/backend/internal/entidades/auth"
@@ -20,6 +21,14 @@ type AuthController struct {
 
 func NuevoAuthController(svc *servicios.AuthService) *AuthController {
 	return &AuthController{Service: svc}
+}
+
+func isSecureCookieRequest(ctx *gin.Context) bool {
+	if ctx.Request != nil && ctx.Request.TLS != nil {
+		return true
+	}
+	proto := strings.ToLower(strings.TrimSpace(ctx.GetHeader("X-Forwarded-Proto")))
+	return proto == "https"
 }
 
 // ---- LOGIN ----
@@ -41,9 +50,10 @@ func (c *AuthController) Login(ctx *gin.Context) {
 		refreshMaxAge = 7 * 24 * 3600 // 7 días
 	}
 	// Cookies HttpOnly (access: 10 min, refresh: 1h o 7d)
+	secureCookies := isSecureCookieRequest(ctx)
 	ctx.SetSameSite(http.SameSiteStrictMode)
-	ctx.SetCookie("access_token", resp.AccessToken, 600, "/", "", true, true)
-	ctx.SetCookie("refresh_token", resp.RefreshToken, refreshMaxAge, "/api/v1/auth/refresh", "", true, true)
+	ctx.SetCookie("access_token", resp.AccessToken, 600, "/", "", secureCookies, true)
+	ctx.SetCookie("refresh_token", resp.RefreshToken, refreshMaxAge, "/api/v1/auth/refresh", "", secureCookies, true)
 
 	utils.SuccessResponse(ctx, "login exitoso", resp)
 }
@@ -63,9 +73,10 @@ func (c *AuthController) LoginPIN(ctx *gin.Context) {
 		utils.Unauthorized(ctx, err.Error())
 		return
 	}
+	secureCookies := isSecureCookieRequest(ctx)
 	ctx.SetSameSite(http.SameSiteStrictMode)
-	ctx.SetCookie("access_token", resp.AccessToken, 600, "/", "", true, true)
-	ctx.SetCookie("refresh_token", resp.RefreshToken, 3600, "/api/v1/auth/refresh", "", true, true)
+	ctx.SetCookie("access_token", resp.AccessToken, 600, "/", "", secureCookies, true)
+	ctx.SetCookie("refresh_token", resp.RefreshToken, 3600, "/api/v1/auth/refresh", "", secureCookies, true)
 	utils.SuccessResponse(ctx, "login PIN exitoso", resp)
 }
 
@@ -83,15 +94,17 @@ func (c *AuthController) RefrescarToken(ctx *gin.Context) {
 	if remember {
 		refreshMaxAge = 7 * 24 * 3600
 	}
+	secureCookies := isSecureCookieRequest(ctx)
 	ctx.SetSameSite(http.SameSiteStrictMode)
-	ctx.SetCookie("access_token", resp.AccessToken, 600, "/", "", true, true)
-	ctx.SetCookie("refresh_token", resp.RefreshToken, refreshMaxAge, "/api/v1/auth/refresh", "", true, true)
+	ctx.SetCookie("access_token", resp.AccessToken, 600, "/", "", secureCookies, true)
+	ctx.SetCookie("refresh_token", resp.RefreshToken, refreshMaxAge, "/api/v1/auth/refresh", "", secureCookies, true)
 	utils.SuccessResponse(ctx, "token refrescado", resp)
 }
 
 func (c *AuthController) Logout(ctx *gin.Context) {
-	ctx.SetCookie("access_token", "", -1, "/", "", true, true)
-	ctx.SetCookie("refresh_token", "", -1, "/api/v1/auth/refresh", "", true, true)
+	secureCookies := isSecureCookieRequest(ctx)
+	ctx.SetCookie("access_token", "", -1, "/", "", secureCookies, true)
+	ctx.SetCookie("refresh_token", "", -1, "/api/v1/auth/refresh", "", secureCookies, true)
 	utils.SuccessResponse(ctx, "sesión cerrada", nil)
 }
 
@@ -198,8 +211,9 @@ func (c *AuthController) LoginSuperAdmin(ctx *gin.Context) {
 		return
 	}
 	ctx.SetSameSite(http.SameSiteStrictMode)
-	ctx.SetCookie("access_token", resp.AccessToken, 600, "/", "", true, true)
-	ctx.SetCookie("refresh_token", resp.RefreshToken, 3600, "/api/v1/auth/refresh", "", true, true)
+	secureCookies := isSecureCookieRequest(ctx)
+	ctx.SetCookie("sa_access_token", resp.AccessToken, 900, "/api/v1/superadmin", "", secureCookies, true)
+	ctx.SetCookie("sa_refresh_token", resp.RefreshToken, 7200, "/api/v1/superadmin", "", secureCookies, true)
 	utils.SuccessResponse(ctx, "login superadmin exitoso", resp)
 }
 

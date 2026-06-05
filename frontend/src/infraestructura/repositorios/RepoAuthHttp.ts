@@ -12,12 +12,12 @@ export const authRepository = {
   loginPin: (data: { tenant_slug: string; pin: string }) => apiPost<LoginResponse>('/auth/login-pin', data),
   refresh: () => apiPost<void>('/auth/refresh'),
   logout: () => apiPost<void>('/auth/logout'),
-  recuperarPassword: (data: { email: string; tenant_slug: string }) => apiPost<void>('/auth/recuperar-password', data),
+  recuperarPassword: (data: { email: string; tenant_slug: string }) => apiPost<void>('/auth/recuperar-password', { correo: data.email }),
   resetearPassword: (data: { token: string; nueva_password: string }) => apiPost<void>('/auth/resetear-password', data),
   miPerfil: () => apiGet<Usuario>('/auth/perfil'),
 
   // SuperAdmin
-  loginSuperAdmin: (data: { email: string; password: string }) => apiPost<LoginResponse>('/superadmin/login', data),
+  loginSuperAdmin: (data: { email: string; password: string }) => apiPost<LoginResponse>('/superadmin/login', { correo: data.email, contrasena: data.password }),
 
   // Gestión usuarios
   listarUsuarios: (params?: Record<string, unknown>) => apiGet<Usuario[]>('/auth/usuarios', params),

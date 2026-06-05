@@ -1,12 +1,10 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { ChevronUp, ChevronDown, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/compartidos/utilidades';
 import Button from './Button';
 import Input from './Input';
 
-// ═══════════════════════════════════════════════════════════
-// DataTable — tabla genérica con búsqueda, sort, paginación
-// ═══════════════════════════════════════════════════════════
+// DataTable - generic table with search, sort, pagination
 
 export interface Column<T> {
   key: string;
@@ -27,7 +25,7 @@ interface DataTableProps<T> {
   emptyMessage?: string;
   emptyIcon?: React.ReactNode;
   actions?: React.ReactNode;
-  // Paginación
+  // Pagination
   page?: number;
   totalPages?: number;
   total?: number;
@@ -73,16 +71,16 @@ export default function DataTable<T>({
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-slate-200">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50">
+            <tr className="border-b border-slate-200 bg-slate-50">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    'px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400',
-                    col.sortable && 'cursor-pointer select-none hover:text-slate-900 dark:hover:text-slate-200',
+                    'px-4 py-3 text-left font-medium text-slate-600',
+                    col.sortable && 'cursor-pointer select-none hover:text-slate-900',
                     col.className,
                   )}
                   onClick={col.sortable ? () => handleSort(col.key) : undefined}
@@ -97,13 +95,13 @@ export default function DataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+          <tbody className="divide-y divide-slate-100">
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
                   {columns.map((col) => (
                     <td key={col.key} className="px-4 py-3">
-                      <div className="h-4 w-3/4 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+                      <div className="h-4 w-3/4 animate-pulse rounded bg-slate-200" />
                     </td>
                   ))}
                 </tr>
@@ -119,9 +117,9 @@ export default function DataTable<T>({
               </tr>
             ) : (
               data.map((item) => (
-                <tr key={keyExtractor(item)} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                <tr key={keyExtractor(item)} className="hover:bg-slate-50 transition-colors">
                   {columns.map((col) => (
-                    <td key={col.key} className={cn('px-4 py-3 text-slate-700 dark:text-slate-300', col.className)}>
+                    <td key={col.key} className={cn('px-4 py-3 text-slate-700', col.className)}>
                       {col.render ? col.render(item) : (item as Record<string, unknown>)[col.key] as React.ReactNode}
                     </td>
                   ))}
@@ -140,7 +138,7 @@ export default function DataTable<T>({
             <Button variant="outline" size="sm" disabled={page === 1} onClick={() => onPageChange?.(page! - 1)}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="px-3 font-medium text-slate-700 dark:text-slate-300">{page}</span>
+            <span className="px-3 font-medium text-slate-700">{page}</span>
             <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => onPageChange?.(page! + 1)}>
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -150,3 +148,4 @@ export default function DataTable<T>({
     </div>
   );
 }
+

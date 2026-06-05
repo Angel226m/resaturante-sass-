@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings, Save, Clock, DollarSign, Palette, Bell } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,9 +9,7 @@ import { Button, Card, CardHeader, Input, Select, Tabs } from '@/infraestructura
 import { useUIStore } from '@/infraestructura/store/useUIStore';
 import { useState } from 'react';
 
-// ═══════════════════════════════════════════════════════════
-// Configuración — ajustes del restaurante y sistema
-// ═══════════════════════════════════════════════════════════
+// Configuración - ajustes del restaurante y sistema
 
 const configSchema = z.object({
   nombre_restaurante: z.string().min(1, 'Requerido'),
@@ -67,7 +65,7 @@ export default function ConfiguracionPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Settings className="h-7 w-7 text-teal-600" /> Configuración
           </h1>
           <p className="text-slate-500">Ajustes del restaurante y sistema</p>
@@ -108,7 +106,7 @@ export default function ConfiguracionPage() {
                     options={[
                       { value: 'es', label: 'Español' },
                       { value: 'en', label: 'English' },
-                      { value: 'pt', label: 'Português' },
+                      { value: 'pt', label: 'Portugués' },
                     ]}
                     {...form.register('idioma')}
                   />
@@ -167,7 +165,7 @@ export default function ConfiguracionPage() {
             <CardHeader title="Tema y Apariencia" description="Personalice la apariencia del sistema" />
             <div className="p-6 space-y-6">
               <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 block">Tema</label>
+                <label className="text-sm font-medium text-slate-700 mb-3 block">Tema</label>
                 <div className="grid gap-4 sm:grid-cols-3">
                   {[
                     { value: 'light', label: 'Claro', icon: '☀️', desc: 'Fondo blanco' },
@@ -177,10 +175,10 @@ export default function ConfiguracionPage() {
                     <button
                       key={theme.value}
                       type="button"
-                      className="flex flex-col items-center gap-2 rounded-xl border-2 border-slate-200 p-6 transition-all hover:border-teal-500 hover:bg-teal-50 dark:border-slate-700 dark:hover:bg-teal-900/20"
+                      className="flex flex-col items-center gap-2 rounded-xl border-2 border-slate-200 p-6 transition-all hover:border-teal-500 hover:bg-teal-50"
                     >
                       <span className="text-3xl">{theme.icon}</span>
-                      <span className="font-medium text-slate-900 dark:text-white">{theme.label}</span>
+                      <span className="font-medium text-slate-900">{theme.label}</span>
                       <span className="text-xs text-slate-500">{theme.desc}</span>
                     </button>
                   ))}
@@ -188,7 +186,7 @@ export default function ConfiguracionPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 block">Color Primario</label>
+                <label className="text-sm font-medium text-slate-700 mb-3 block">Color Primario</label>
                 <div className="flex gap-3">
                   {['#0d9488', '#3b82f6', '#8b5cf6', '#ef4444', '#f59e0b', '#ec4899'].map((c) => (
                     <button key={c} type="button" className="h-10 w-10 rounded-xl border-2 border-transparent transition-all hover:scale-110 hover:border-slate-300" style={{ backgroundColor: c }} />
@@ -211,14 +209,14 @@ export default function ConfiguracionPage() {
                 { label: 'Turno de caja sin cerrar', desc: 'Recordar cerrar el turno de caja' },
                 { label: 'Pedido delivery demorado', desc: 'Alerta de pedidos demorados' },
               ].map((n, i) => (
-                <div key={i} className="flex items-center justify-between rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                <div key={i} className="flex items-center justify-between rounded-xl border border-slate-200 p-4">
                   <div>
-                    <p className="font-medium text-slate-900 dark:text-white">{n.label}</p>
+                    <p className="font-medium text-slate-900">{n.label}</p>
                     <p className="text-xs text-slate-500">{n.desc}</p>
                   </div>
                   <label className="relative inline-flex cursor-pointer items-center">
                     <input type="checkbox" defaultChecked className="peer sr-only" />
-                    <div className="h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-teal-500 peer-checked:after:translate-x-full dark:bg-slate-700" />
+                    <div className="h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-teal-500 peer-checked:after:translate-x-full" />
                   </label>
                 </div>
               ))}
@@ -229,3 +227,4 @@ export default function ConfiguracionPage() {
     </div>
   );
 }
+

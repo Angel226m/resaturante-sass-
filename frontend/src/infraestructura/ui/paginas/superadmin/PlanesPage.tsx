@@ -1,18 +1,19 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CreditCard, Plus, Pencil, Trash2, Check, Zap, Crown, Rocket } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '@/infraestructura/store/useAuthStore';
 import { plataformaRepository } from '@/infraestructura/repositorios';
 import type { Plan } from '@/dominio/entidades';
 import { Button, Badge, Card, Modal, Input, EmptyState } from '@/infraestructura/ui/componentes/comunes';
 import { formatCurrency } from '@/compartidos/utilidades';
 
-// ═══════════════════════════════════════════════════════════
-// Planes — CRUD planes de suscripción (SuperAdmin)
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Planes â€” CRUD planes de suscripciÃ³n (SuperAdmin)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 const planSchema = z.object({
   nombre: z.string().min(1, 'Requerido'),
@@ -45,12 +46,14 @@ const planColors: Record<string, string> = {
 
 export default function PlanesPage() {
   const qc = useQueryClient();
+  const { isSuperAdmin, isLoading: authLoading } = useAuthStore();
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Plan | null>(null);
 
   const { data: planes = [], isLoading } = useQuery({
     queryKey: ['superadmin', 'planes'],
     queryFn: () => plataformaRepository.listarPlanes(),
+    enabled: isSuperAdmin && !authLoading,
   });
 
   const crear = useMutation({
@@ -101,7 +104,7 @@ export default function PlanesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <CreditCard className="h-7 w-7 text-teal-600" /> Planes
           </h1>
           <p className="text-slate-500">{planes.length} planes configurados</p>
@@ -112,7 +115,7 @@ export default function PlanesPage() {
       </div>
 
       {planes.length === 0 ? (
-        <EmptyState icon={<CreditCard className="h-12 w-12" />} title="Sin planes" description="Cree planes de suscripción para la plataforma" action={<Button onClick={() => setShowModal(true)}><Plus className="h-4 w-4" /> Crear plan</Button>} />
+        <EmptyState icon={<CreditCard className="h-12 w-12" />} title="Sin planes" description="Cree planes de suscripciÃ³n para la plataforma" action={<Button onClick={() => setShowModal(true)}><Plus className="h-4 w-4" /> Crear plan</Button>} />
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {planes.map((plan: Plan) => {
@@ -145,7 +148,7 @@ export default function PlanesPage() {
                     <span className="text-white/70">/mes</span>
                   </div>
                   {plan.precio_anual ? (
-                    <p className="text-sm text-white/70 mt-1">{formatCurrency(plan.precio_anual)}/año</p>
+                    <p className="text-sm text-white/70 mt-1">{formatCurrency(plan.precio_anual)}/aÃ±o</p>
                   ) : null}
                 </div>
 
@@ -156,9 +159,9 @@ export default function PlanesPage() {
                       {f.included ? (
                         <Check className="h-4 w-4 text-emerald-500" />
                       ) : (
-                        <div className="h-4 w-4 rounded-full border-2 border-slate-200 dark:border-slate-700" />
+                        <div className="h-4 w-4 rounded-full border-2 border-slate-200" />
                       )}
-                      <span className={`text-sm ${f.included ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 line-through'}`}>
+                      <span className={`text-sm ${f.included ? 'text-slate-700' : 'text-slate-400 line-through'}`}>
                         {f.label}
                       </span>
                     </div>
@@ -166,11 +169,11 @@ export default function PlanesPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="border-t border-slate-100 p-4 flex gap-2 dark:border-slate-700">
+                <div className="border-t border-slate-100 p-4 flex gap-2">
                   <Button variant="outline" size="sm" className="flex-1" onClick={() => openEdit(plan)}>
                     <Pencil className="h-4 w-4" /> Editar
                   </Button>
-                  <Button variant="danger" size="sm" onClick={() => { if (confirm('¿Eliminar plan?')) eliminar.mutate(String(plan.id)); }}>
+                  <Button variant="danger" size="sm" onClick={() => { if (confirm('Â¿Eliminar plan?')) eliminar.mutate(String(plan.id)); }}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -185,29 +188,29 @@ export default function PlanesPage() {
         <form onSubmit={form.handleSubmit((d) => crear.mutate(d))} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Nombre" {...form.register('nombre')} error={form.formState.errors.nombre?.message} />
-            <Input label="Código" {...form.register('codigo')} error={form.formState.errors.codigo?.message} placeholder="starter, professional..." />
+            <Input label="CÃ³digo" {...form.register('codigo')} error={form.formState.errors.codigo?.message} placeholder="starter, professional..." />
           </div>
-          <Input label="Descripción" {...form.register('descripcion')} />
+          <Input label="DescripciÃ³n" {...form.register('descripcion')} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Input type="number" step="0.01" label="Precio Mensual" {...form.register('precio_mensual')} error={form.formState.errors.precio_mensual?.message} />
             <Input type="number" step="0.01" label="Precio Anual" {...form.register('precio_anual')} />
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Input type="number" label="Máx. Locales" {...form.register('max_locales')} error={form.formState.errors.max_locales?.message} />
-            <Input type="number" label="Máx. Usuarios" {...form.register('max_usuarios')} error={form.formState.errors.max_usuarios?.message} />
-            <Input type="number" label="Máx. Productos" {...form.register('max_productos_menu')} error={form.formState.errors.max_productos_menu?.message} />
+            <Input type="number" label="MÃ¡x. Locales" {...form.register('max_locales')} error={form.formState.errors.max_locales?.message} />
+            <Input type="number" label="MÃ¡x. Usuarios" {...form.register('max_usuarios')} error={form.formState.errors.max_usuarios?.message} />
+            <Input type="number" label="MÃ¡x. Productos" {...form.register('max_productos_menu')} error={form.formState.errors.max_productos_menu?.message} />
           </div>
 
           <div className="space-y-3">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Características incluidas</label>
+            <label className="text-sm font-medium text-slate-700">CaracterÃ­sticas incluidas</label>
             {[
               { key: 'tiene_delivery', label: 'Delivery' },
               { key: 'tiene_reservas', label: 'Reservas' },
               { key: 'tiene_reportes', label: 'Reportes Avanzados' },
             ].map(({ key, label }) => (
-              <label key={key} className="flex items-center gap-3 rounded-lg border border-slate-200 p-3 cursor-pointer hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
+              <label key={key} className="flex items-center gap-3 rounded-lg border border-slate-200 p-3 cursor-pointer hover:bg-slate-50">
                 <input type="checkbox" {...form.register(key as any)} className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500" />
-                <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
+                <span className="text-sm text-slate-700">{label}</span>
               </label>
             ))}
           </div>
@@ -221,3 +224,4 @@ export default function PlanesPage() {
     </div>
   );
 }
+

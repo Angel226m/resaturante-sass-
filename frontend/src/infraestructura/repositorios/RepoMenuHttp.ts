@@ -15,17 +15,62 @@ import {
 const isDemo = () => useAuthStore.getState().isDemoMode;
 let nextId = 100;
 
+function normalizeCategoria(raw: any): CategoriaMenu {
+  return {
+    id: Number(raw?.id ?? raw?.id_categoria_menu ?? 0),
+    tenant_id: String(raw?.tenant_id ?? ''),
+    local_id: Number(raw?.local_id ?? 0),
+    nombre: String(raw?.nombre ?? ''),
+    descripcion: String(raw?.descripcion ?? ''),
+    icono: String(raw?.icono ?? ''),
+    color: String(raw?.color ?? '#0d9488'),
+    orden: Number(raw?.orden ?? 0),
+    activo: Boolean(raw?.activo ?? true),
+    cantidad_productos: Number(raw?.cantidad_productos ?? 0),
+    creado_en: String(raw?.creado_en ?? raw?.created_at ?? ''),
+    actualizado_en: String(raw?.actualizado_en ?? raw?.updated_at ?? ''),
+  };
+}
+
+function normalizeProducto(raw: any): ProductoMenu {
+  return {
+    id: Number(raw?.id ?? raw?.id_producto_menu ?? 0),
+    tenant_id: String(raw?.tenant_id ?? ''),
+    local_id: Number(raw?.local_id ?? 0),
+    categoria_menu_id: Number(raw?.categoria_menu_id ?? raw?.categoria_id ?? 0),
+    nombre: String(raw?.nombre ?? ''),
+    descripcion: String(raw?.descripcion ?? raw?.descripcion_corta ?? ''),
+    precio_base: Number(raw?.precio_base ?? raw?.precio ?? 0),
+    imagen_url: raw?.imagen_url ?? raw?.imagen_principal_url ?? null,
+    tiempo_preparacion: Number(raw?.tiempo_preparacion ?? raw?.tiempo_preparacion_min ?? 0),
+    calorias: raw?.calorias ?? null,
+    alergenos: raw?.alergenos ?? raw?.contiene_alergenos ?? null,
+    es_vegetariano: Boolean(raw?.es_vegetariano ?? false),
+    es_vegano: Boolean(raw?.es_vegano ?? false),
+    es_sin_gluten: Boolean(raw?.es_sin_gluten ?? raw?.es_gluten_free ?? false),
+    es_especialidad: Boolean(raw?.es_especialidad ?? raw?.es_popular ?? raw?.destacado ?? false),
+    disponible: Boolean(raw?.disponible ?? true),
+    orden: Number(raw?.orden ?? raw?.orden_display ?? 0),
+    activo: Boolean(raw?.activo ?? true),
+    imagenes: raw?.imagenes,
+    variantes: raw?.variantes,
+    grupos_modificadores: raw?.grupos_modificadores,
+    creado_en: String(raw?.creado_en ?? raw?.created_at ?? ''),
+    actualizado_en: String(raw?.actualizado_en ?? raw?.updated_at ?? ''),
+  };
+}
+
 export const menuRepository = {
   // Categorías
-  listarCategorias: (params?: Record<string, unknown>) => isDemo() ? Promise.resolve(DEMO_CATEGORIAS) : apiGet<CategoriaMenu[]>('/menu/categorias', params),
-  obtenerCategoria: (id: string) => isDemo() ? Promise.resolve(DEMO_CATEGORIAS.find(c => String(c.id) === id) ?? DEMO_CATEGORIAS[0]) : apiGet<CategoriaMenu>(`/menu/categorias/${id}`),
+  listarCategorias: (params?: Record<string, unknown>) => isDemo() ? Promise.resolve(DEMO_CATEGORIAS) : apiGet<any[]>('/menu/categorias', params).then((items) => (items ?? []).map(normalizeCategoria)),
+  obtenerCategoria: (id: string) => isDemo() ? Promise.resolve(DEMO_CATEGORIAS.find(c => String(c.id) === id) ?? DEMO_CATEGORIAS[0]!) : apiGet<any>(`/menu/categorias/${id}`).then(normalizeCategoria),
   crearCategoria: (data: Partial<CategoriaMenu>) => isDemo() ? Promise.resolve({ ...data, id: ++nextId } as CategoriaMenu) : apiPost<CategoriaMenu>('/menu/categorias', data),
   actualizarCategoria: (id: string, data: Partial<CategoriaMenu>) => isDemo() ? Promise.resolve({ ...data, id: Number(id) } as CategoriaMenu) : apiPut<CategoriaMenu>(`/menu/categorias/${id}`, data),
   eliminarCategoria: (id: string) => isDemo() ? Promise.resolve(undefined as never) : apiDelete(`/menu/categorias/${id}`),
 
   // Productos
-  listarProductos: (params?: Record<string, unknown>) => isDemo() ? Promise.resolve(DEMO_PRODUCTOS) : apiGet<ProductoMenu[]>('/menu/productos', params),
-  obtenerProducto: (id: string) => isDemo() ? Promise.resolve(DEMO_PRODUCTOS.find(p => String(p.id) === id) ?? DEMO_PRODUCTOS[0]) : apiGet<ProductoMenu>(`/menu/productos/${id}`),
+  listarProductos: (params?: Record<string, unknown>) => isDemo() ? Promise.resolve(DEMO_PRODUCTOS) : apiGet<any[]>('/menu/productos', params).then((items) => (items ?? []).map(normalizeProducto)),
+  obtenerProducto: (id: string) => isDemo() ? Promise.resolve(DEMO_PRODUCTOS.find(p => String(p.id) === id) ?? DEMO_PRODUCTOS[0]!) : apiGet<any>(`/menu/productos/${id}`).then(normalizeProducto),
   crearProducto: (data: Partial<ProductoMenu>) => isDemo() ? Promise.resolve({ ...data, id: ++nextId } as ProductoMenu) : apiPost<ProductoMenu>('/menu/productos', data),
   actualizarProducto: (id: string, data: Partial<ProductoMenu>) => isDemo() ? Promise.resolve({ ...data, id: Number(id) } as ProductoMenu) : apiPut<ProductoMenu>(`/menu/productos/${id}`, data),
   eliminarProducto: (id: string) => isDemo() ? Promise.resolve(undefined as never) : apiDelete(`/menu/productos/${id}`),
@@ -34,7 +79,7 @@ export const menuRepository = {
       const prod = DEMO_PRODUCTOS.find(p => String(p.id) === id);
       return Promise.resolve({ ...prod, disponible } as ProductoMenu);
     }
-    return apiPatch<ProductoMenu>(`/menu/productos/${id}/disponibilidad`, { disponible });
+    return apiPatch<any>(`/menu/productos/${id}/disponibilidad`, { disponible }).then(normalizeProducto);
   },
 
   // Variantes

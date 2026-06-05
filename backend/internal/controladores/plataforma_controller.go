@@ -182,6 +182,9 @@ func (c *PlataformaController) CambiarPlan(ctx *gin.Context) {
 
 func (c *PlataformaController) ListarFacturas(ctx *gin.Context) {
 	id := ctx.Param("id")
+	if id == "" {
+		id = ctx.Query("tenant_id")
+	}
 	pagina, porPagina := obtenerPaginacion(ctx)
 	facturas, total, err := c.Service.ListarFacturas(id, pagina, porPagina)
 	if err != nil {

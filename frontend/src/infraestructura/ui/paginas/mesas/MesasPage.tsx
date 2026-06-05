@@ -34,10 +34,10 @@ type MesaForm = z.infer<typeof mesaSchema>;
 type ZonaForm = z.infer<typeof zonaSchema>;
 
 const estadoConfig: Record<string, { icon: React.ReactNode; color: string; bg: string; label: string }> = {
-  disponible: { icon: <Sparkles className="h-4 w-4" />, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800', label: 'Disponible' },
-  ocupada: { icon: <Users className="h-4 w-4" />, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800', label: 'Ocupada' },
-  reservada: { icon: <Coffee className="h-4 w-4" />, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800', label: 'Reservada' },
-  fuera_servicio: { icon: <Ban className="h-4 w-4" />, color: 'text-red-600', bg: 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800', label: 'Fuera de servicio' },
+  disponible: { icon: <Sparkles className="h-4 w-4" />, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200', label: 'Disponible' },
+  ocupada: { icon: <Users className="h-4 w-4" />, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200', label: 'Ocupada' },
+  reservada: { icon: <Coffee className="h-4 w-4" />, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200', label: 'Reservada' },
+  fuera_servicio: { icon: <Ban className="h-4 w-4" />, color: 'text-red-600', bg: 'bg-red-50 border-red-200', label: 'Fuera de servicio' },
 };
 
 export default function MesasPage() {
@@ -113,7 +113,7 @@ export default function MesasPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <LayoutGrid className="h-7 w-7 text-teal-600" /> Mesas
           </h1>
           <p className="text-slate-500">Gestión visual de zonas y mesas del restaurante</p>
@@ -143,7 +143,7 @@ export default function MesasPage() {
                   <span className={cfg.color}>{cfg.icon}</span>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{count}</p>
+                  <p className="text-2xl font-bold text-slate-900">{count}</p>
                   <p className="text-xs text-slate-500">{cfg.label}</p>
                 </div>
               </div>
@@ -158,7 +158,7 @@ export default function MesasPage() {
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-40 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />
+            <div key={i} className="h-40 animate-pulse rounded-2xl bg-slate-100" />
           ))}
         </div>
       ) : mesasFiltradas.length === 0 ? (
@@ -177,13 +177,13 @@ export default function MesasPage() {
                   {!isReadOnly && (
                     <>
                       <button
-                        className="rounded-lg bg-white/80 p-1.5 text-slate-500 hover:text-teal-600 dark:bg-slate-700/80"
+                        className="rounded-lg bg-white/85 p-1.5 text-slate-500 hover:text-teal-600"
                         onClick={(e) => { e.stopPropagation(); setEditingMesa(mesa); mesaForm.reset({ numero: mesa.numero, capacidad: mesa.capacidad, zona_id: String(mesa.zona_id) }); setShowMesaModal(true); }}
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
                       <button
-                        className="rounded-lg bg-white/80 p-1.5 text-slate-500 hover:text-red-600 dark:bg-slate-700/80"
+                        className="rounded-lg bg-white/85 p-1.5 text-slate-500 hover:text-red-600"
                         onClick={(e) => { e.stopPropagation(); if (confirm('¿Eliminar mesa?')) eliminarMesa.mutate(String(mesa.id)); }}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -193,7 +193,7 @@ export default function MesasPage() {
                 </div>
 
                 <div className={`mb-2 ${cfg.color}`}>{cfg.icon}</div>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">{mesa.numero}</p>
+                <p className="text-3xl font-bold text-slate-900">{mesa.numero}</p>
                 <p className="text-xs text-slate-500 mt-1">
                   <Users className="inline h-3 w-3 mr-1" />{mesa.capacidad} personas
                 </p>

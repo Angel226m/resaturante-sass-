@@ -1,0 +1,10 @@
+export type { IAuthRepo } from './IAuthRepo';
+export type { IMenuRepo } from './IMenuRepo';
+export type { IOrdenesRepo } from './IOrdenesRepo';
+export type { ICajaRepo } from './ICajaRepo';
+export type { IClientesRepo } from './IClientesRepo';
+export type { IDeliveryRepo } from './IDeliveryRepo';
+export type { ILocalRepo } from './ILocalRepo';
+export type { IPlataformaRepo } from './IPlataformaRepo';
+export type { IReportesRepo } from './IReportesRepo';
+export type { IReservasRepo } from './IReservasRepo';

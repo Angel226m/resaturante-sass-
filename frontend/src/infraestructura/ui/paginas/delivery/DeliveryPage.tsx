@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Truck, Plus, MapPin, Package, User, Clock, Eye, Navigation, Pencil, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -11,9 +11,7 @@ import { Button, Badge, Card, Modal, Input, DataTable, Tabs, StatCard, EmptyStat
 import { formatCurrency, getStatusColor, getStatusLabel } from '@/compartidos/utilidades';
 import type { Column } from '@/infraestructura/ui/componentes/comunes/DataTable';
 
-// ═══════════════════════════════════════════════════════════
-// Delivery — zonas CRUD + \u00f3rdenes + seguimiento
-// ═══════════════════════════════════════════════════════════
+// Delivery - zonas CRUD + ordenes + seguimiento
 
 const zonaSchema = z.object({
   nombre: z.string().min(1, 'Requerido'),
@@ -103,7 +101,7 @@ export default function DeliveryPage() {
   const entregadas = ordenes.filter((o: DeliveryOrden) => o.estado_delivery === 'entregado');
 
   const tabs = [
-    { id: 'ordenes', label: '\u00d3rdenes', icon: <Package className="h-4 w-4" />, count: ordenes.length },
+    { id: 'ordenes', label: 'Órdenes', icon: <Package className="h-4 w-4" />, count: ordenes.length },
     { id: 'zonas', label: 'Zonas', icon: <MapPin className="h-4 w-4" />, count: zonas.length },
   ];
 
@@ -115,10 +113,10 @@ export default function DeliveryPage() {
     },
     {
       key: 'direccion_entrega',
-      label: 'Direcci\u00f3n',
+      label: 'Dirección',
       render: (o) => (
         <div className="max-w-[250px]">
-          <p className="text-sm text-slate-900 dark:text-white truncate">{o.direccion_entrega}</p>
+          <p className="text-sm text-slate-900 truncate">{o.direccion_entrega}</p>
           {o.referencia_entrega && <p className="text-xs text-slate-500 truncate">{o.referencia_entrega}</p>}
         </div>
       ),
@@ -169,28 +167,28 @@ export default function DeliveryPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Truck className="h-7 w-7 text-teal-600" /> Delivery
           </h1>
-          <p className="text-slate-500">Gesti\u00f3n de entregas y zonas de cobertura</p>
+          <p className="text-slate-500">Gestión de entregas y zonas de cobertura</p>
         </div>
         {tab === 'zonas' && (
           <Button onClick={openNewZona}>
-            <Plus className="h-4 w-4" /> Nueva Zona
+            <Plus className="h-4 w-4" /> Nueva zona
           </Button>
         )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4">
         <StatCard title="Pendientes" value={pendientes.length.toString()} icon={<Clock className="h-5 w-5" />} color="amber" />
-        <StatCard title="En Camino" value={enCamino.length.toString()} icon={<Truck className="h-5 w-5" />} color="blue" />
+        <StatCard title="En camino" value={enCamino.length.toString()} icon={<Truck className="h-5 w-5" />} color="blue" />
         <StatCard title="Entregadas" value={entregadas.length.toString()} icon={<Package className="h-5 w-5" />} color="emerald" />
-        <StatCard title="Zonas Activas" value={zonas.filter((z: ZonaDelivery) => z.activo !== false).length.toString()} icon={<MapPin className="h-5 w-5" />} color="teal" />
+        <StatCard title="Zonas activas" value={zonas.filter((z: ZonaDelivery) => z.activo !== false).length.toString()} icon={<MapPin className="h-5 w-5" />} color="teal" />
       </div>
 
       <Tabs tabs={tabs} activeTab={tab} onChange={setTab} />
 
-      {/* --- TAB: \u00d3rdenes --- */}
+      {/* TAB: Órdenes */}
       {tab === 'ordenes' && (
         <Card>
           <DataTable
@@ -198,13 +196,13 @@ export default function DeliveryPage() {
             data={ordenes}
             isLoading={ordenesLoading}
             searchable
-            searchPlaceholder="Buscar por direcci\u00f3n, cliente..."
-            emptyMessage="No hay \u00f3rdenes de delivery"
+            searchPlaceholder="Buscar por dirección, cliente..."
+            emptyMessage="No hay órdenes de delivery"
           />
         </Card>
       )}
 
-      {/* --- TAB: Zonas --- */}
+      {/* TAB: Zonas */}
       {tab === 'zonas' && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {zonas.length === 0 ? (
@@ -216,7 +214,7 @@ export default function DeliveryPage() {
               <Card key={zona.id}>
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-slate-900 dark:text-white">{zona.nombre}</h3>
+                    <h3 className="font-semibold text-slate-900">{zona.nombre}</h3>
                     <div className="flex items-center gap-2">
                       <Badge variant={zona.activo !== false ? 'success' : 'danger'}>{zona.activo !== false ? 'Activa' : 'Inactiva'}</Badge>
                       <Button size="sm" variant="ghost" onClick={() => openEditZona(zona)}><Pencil className="h-3.5 w-3.5" /></Button>
@@ -225,8 +223,8 @@ export default function DeliveryPage() {
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Costo env\u00edo</span>
-                      <span className="font-semibold text-slate-900 dark:text-white">{formatCurrency(zona.costo_envio)}</span>
+                      <span className="text-slate-500">Costo envio</span>
+                      <span className="font-semibold text-slate-900">{formatCurrency(zona.costo_envio)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500">Tiempo estimado</span>
@@ -247,26 +245,26 @@ export default function DeliveryPage() {
       )}
 
       {/* Modal crear/editar zona */}
-      <Modal isOpen={showZonaModal} onClose={closeZonaModal} title={editingZona ? 'Editar Zona' : 'Nueva Zona de Delivery'} size="md">
+      <Modal isOpen={showZonaModal} onClose={closeZonaModal} title={editingZona ? 'Editar zona' : 'Nueva zona de delivery'} size="md">
         <form onSubmit={zonaForm.handleSubmit(onZonaSubmit)} className="space-y-4">
           <Input label="Nombre" {...zonaForm.register('nombre')} error={zonaForm.formState.errors.nombre?.message} />
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input type="number" step="0.01" label="Costo Env\u00edo" {...zonaForm.register('costo_envio')} error={zonaForm.formState.errors.costo_envio?.message} />
-            <Input type="number" label="Tiempo Estimado (min)" {...zonaForm.register('tiempo_estimado_min')} error={zonaForm.formState.errors.tiempo_estimado_min?.message} />
+            <Input type="number" step="0.01" label="Costo envío" {...zonaForm.register('costo_envio')} error={zonaForm.formState.errors.costo_envio?.message} />
+            <Input type="number" label="Tiempo estimado (min)" {...zonaForm.register('tiempo_estimado_min')} error={zonaForm.formState.errors.tiempo_estimado_min?.message} />
           </div>
           <Input type="number" step="0.1" label="Radio (km, opcional)" {...zonaForm.register('radio_km')} />
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" type="button" onClick={closeZonaModal}>Cancelar</Button>
-            <Button type="submit" isLoading={crearZona.isPending || actualizarZona.isPending}>{editingZona ? 'Guardar cambios' : 'Crear Zona'}</Button>
+            <Button type="submit" isLoading={crearZona.isPending || actualizarZona.isPending}>{editingZona ? 'Guardar cambios' : 'Crear zona'}</Button>
           </div>
         </form>
       </Modal>
 
       {/* Modal confirmar eliminar zona */}
-      <Modal isOpen={!!showDeleteZona} onClose={() => setShowDeleteZona(null)} title="Eliminar Zona" size="sm">
+      <Modal isOpen={!!showDeleteZona} onClose={() => setShowDeleteZona(null)} title="Eliminar zona" size="sm">
         <div className="space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            \u00bfSeguro que deseas eliminar la zona <strong>{showDeleteZona?.nombre}</strong>? Esta acci\u00f3n no se puede deshacer.
+          <p className="text-sm text-slate-600">
+            Seguro que deseas eliminar la zona <strong>{showDeleteZona?.nombre}</strong>? Esta acción no se puede deshacer.
           </p>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowDeleteZona(null)}>Cancelar</Button>
@@ -276,9 +274,9 @@ export default function DeliveryPage() {
       </Modal>
 
       {/* Modal asignar repartidor */}
-      <Modal isOpen={!!showAsignarModal} onClose={() => setShowAsignarModal(null)} title="Asignar Repartidor" size="sm">
+      <Modal isOpen={!!showAsignarModal} onClose={() => setShowAsignarModal(null)} title="Asignar repartidor" size="sm">
         <div className="space-y-4">
-          <Input label="ID del Repartidor" value={repartidorId} onChange={(e) => setRepartidorId(e.target.value)} placeholder="Ingrese el ID del repartidor" />
+          <Input label="ID del repartidor" value={repartidorId} onChange={(e) => setRepartidorId(e.target.value)} placeholder="Ingrese el ID del repartidor" />
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowAsignarModal(null)}>Cancelar</Button>
             <Button
@@ -293,13 +291,13 @@ export default function DeliveryPage() {
       </Modal>
 
       {/* Modal seguimiento */}
-      <Modal isOpen={!!showSeguimiento} onClose={() => setShowSeguimiento(null)} title="Seguimiento de Entrega" size="md">
+      <Modal isOpen={!!showSeguimiento} onClose={() => setShowSeguimiento(null)} title="Seguimiento de entrega" size="md">
         {showSeguimiento && (
           <div className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <p className="text-xs text-slate-500">Direcci\u00f3n</p>
-                <p className="text-sm font-medium text-slate-900 dark:text-white">{showSeguimiento.direccion_entrega}</p>
+                <p className="text-xs text-slate-500">Dirección</p>
+                <p className="text-sm font-medium text-slate-900">{showSeguimiento.direccion_entrega}</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">Estado</p>
@@ -317,7 +315,7 @@ export default function DeliveryPage() {
             {showSeguimiento.referencia_entrega && (
               <div>
                 <p className="text-xs text-slate-500">Referencia</p>
-                <p className="text-sm text-slate-700 dark:text-slate-300">{showSeguimiento.referencia_entrega}</p>
+                <p className="text-sm text-slate-700">{showSeguimiento.referencia_entrega}</p>
               </div>
             )}
           </div>
@@ -326,3 +324,4 @@ export default function DeliveryPage() {
     </div>
   );
 }
+

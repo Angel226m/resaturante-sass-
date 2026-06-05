@@ -24,9 +24,12 @@ func NuevoLocalRepo(db *sql.DB) *LocalRepo {
 
 func (r *LocalRepo) ListarLocales(tenantID string) ([]local.Local, error) {
 	rows, err := r.DB.Query(`
-		SELECT id, tenant_id, nombre, direccion, distrito, provincia, departamento,
-			   telefono, correo, latitud, longitud, es_principal,
-			   horario_apertura, horario_cierre, acepta_reservas, acepta_delivery,
+		SELECT id, tenant_id, nombre, direccion,
+			   COALESCE(distrito, ''), COALESCE(provincia, ''), COALESCE(departamento, ''),
+			   COALESCE(telefono, ''), COALESCE(correo, ''),
+			   latitud, longitud, es_principal,
+			   COALESCE(horario_apertura::text, ''), COALESCE(horario_cierre::text, ''),
+			   acepta_reservas, acepta_delivery,
 			   radio_delivery_km, activo, deleted_at, created_at, updated_at
 		FROM locales WHERE tenant_id = $1 AND deleted_at IS NULL ORDER BY es_principal DESC, nombre
 	`, tenantID)
@@ -57,9 +60,12 @@ func (r *LocalRepo) ListarLocales(tenantID string) ([]local.Local, error) {
 func (r *LocalRepo) ObtenerLocal(tenantID string, id int) (*local.Local, error) {
 	var l local.Local
 	err := r.DB.QueryRow(`
-		SELECT id, tenant_id, nombre, direccion, distrito, provincia, departamento,
-			   telefono, correo, latitud, longitud, es_principal,
-			   horario_apertura, horario_cierre, acepta_reservas, acepta_delivery,
+		SELECT id, tenant_id, nombre, direccion,
+			   COALESCE(distrito, ''), COALESCE(provincia, ''), COALESCE(departamento, ''),
+			   COALESCE(telefono, ''), COALESCE(correo, ''),
+			   latitud, longitud, es_principal,
+			   COALESCE(horario_apertura::text, ''), COALESCE(horario_cierre::text, ''),
+			   acepta_reservas, acepta_delivery,
 			   radio_delivery_km, activo, deleted_at, created_at, updated_at
 		FROM locales WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
 	`, id, tenantID).Scan(
@@ -82,9 +88,12 @@ func (r *LocalRepo) CrearLocal(tenantID string, req local.NuevoLocalRequest) (*l
 		INSERT INTO locales (tenant_id, nombre, direccion, distrito, provincia, departamento,
 			telefono, correo, acepta_reservas, acepta_delivery, radio_delivery_km)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-		RETURNING id, tenant_id, nombre, direccion, distrito, provincia, departamento,
-			telefono, correo, latitud, longitud, es_principal,
-			horario_apertura, horario_cierre, acepta_reservas, acepta_delivery,
+		RETURNING id, tenant_id, nombre, direccion,
+			COALESCE(distrito, ''), COALESCE(provincia, ''), COALESCE(departamento, ''),
+			COALESCE(telefono, ''), COALESCE(correo, ''),
+			latitud, longitud, es_principal,
+			COALESCE(horario_apertura::text, ''), COALESCE(horario_cierre::text, ''),
+			acepta_reservas, acepta_delivery,
 			radio_delivery_km, activo, deleted_at, created_at, updated_at
 	`,
 		tenantID, req.Nombre, req.Direccion, req.Distrito, req.Provincia, req.Departamento,
@@ -222,7 +231,7 @@ func (r *LocalRepo) ActualizarLocal(tenantID string, id int, req local.Actualiza
 
 func (r *LocalRepo) ListarZonas(tenantID string, localID int) ([]local.Zona, error) {
 	rows, err := r.DB.Query(`
-		SELECT id, tenant_id, local_id, nombre, descripcion, color, orden, activo, deleted_at, created_at
+		SELECT id, tenant_id, local_id, nombre, COALESCE(descripcion, ''), COALESCE(color, ''), orden, activo, deleted_at, created_at
 		FROM zonas WHERE tenant_id = $1 AND local_id = $2 AND deleted_at IS NULL ORDER BY orden
 	`, tenantID, localID)
 	if err != nil {
@@ -316,7 +325,8 @@ func (r *LocalRepo) EliminarZona(tenantID string, id int) error {
 func (r *LocalRepo) ListarMesas(tenantID string, localID int) ([]local.Mesa, error) {
 	rows, err := r.DB.Query(`
 		SELECT m.id, m.tenant_id, m.local_id, m.zona_id, m.numero, m.capacidad,
-			   m.estado, m.forma, m.posicion_x, m.posicion_y, m.qr_codigo, m.qr_url,
+			   m.estado, m.forma, m.posicion_x, m.posicion_y,
+			   COALESCE(m.qr_codigo, ''), COALESCE(m.qr_url, ''),
 			   m.activo, m.deleted_at, m.created_at, m.updated_at,
 			   COALESCE(z.nombre, '') as nombre_zona,
 			   COALESCE(z.piso, 1) as piso,
@@ -353,7 +363,8 @@ func (r *LocalRepo) ObtenerMesa(tenantID string, id int) (*local.Mesa, error) {
 	var m local.Mesa
 	err := r.DB.QueryRow(`
 		SELECT m.id, m.tenant_id, m.local_id, m.zona_id, m.numero, m.capacidad,
-			   m.estado, m.forma, m.posicion_x, m.posicion_y, m.qr_codigo, m.qr_url,
+			   m.estado, m.forma, m.posicion_x, m.posicion_y,
+			   COALESCE(m.qr_codigo, ''), COALESCE(m.qr_url, ''),
 			   m.activo, m.deleted_at, m.created_at, m.updated_at,
 			   COALESCE(z.nombre, '') as nombre_zona,
 			   COALESCE(z.piso, 1) as piso,
@@ -380,7 +391,8 @@ func (r *LocalRepo) CrearMesa(tenantID string, req local.NuevaMesaRequest) (*loc
 		INSERT INTO mesas (tenant_id, local_id, zona_id, numero, capacidad, forma, posicion_x, posicion_y)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
 		RETURNING id, tenant_id, local_id, zona_id, numero, capacidad, estado, forma,
-			posicion_x, posicion_y, qr_codigo, qr_url, activo, deleted_at, created_at, updated_at
+			posicion_x, posicion_y, COALESCE(qr_codigo, ''), COALESCE(qr_url, ''),
+			activo, deleted_at, created_at, updated_at
 	`, tenantID, req.LocalID, req.ZonaID, req.Numero, req.Capacidad, req.Forma, req.PosicionX, req.PosicionY,
 	).Scan(
 		&m.ID, &m.TenantID, &m.LocalID, &m.ZonaID, &m.Numero, &m.Capacidad,
@@ -472,8 +484,10 @@ func (r *LocalRepo) ObtenerConfiguracion(tenantID string, localID int) (*local.C
 	err := r.DB.QueryRow(`
 		SELECT id, tenant_id, local_id, moneda, simbolo_moneda, zona_horaria, formato_fecha,
 			   igv_porcentaje, precio_incluye_igv, propina_sugerida, propina_porcentaje,
-			   cobrar_cubierto, precio_cubierto, mensaje_ticket, mensaje_wifi,
-			   correo_notificaciones, enviar_email_reserva, enviar_email_orden,
+			   cobrar_cubierto, precio_cubierto,
+			   COALESCE(mensaje_ticket, ''), COALESCE(mensaje_wifi, ''),
+			   COALESCE(correo_notificaciones, ''),
+			   enviar_email_reserva, enviar_email_orden,
 			   tiempo_preparacion_default_min, minutos_alerta_orden_demorada,
 			   permite_ordenar_sin_mesero, permitir_reservas, tiempo_max_reserva,
 			   permitir_delivery, updated_at

@@ -1,8 +1,12 @@
 package middleware
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
+	"io"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -24,12 +28,12 @@ func Tenant(db *sql.DB) gin.HandlerFunc {
 		}
 
 		// Verificar que el tenant existe y está activo
-		var activo bool
+		var estado string
 		var deletedAt *time.Time
 		err := db.QueryRow(
-			"SELECT activo, deleted_at FROM tenants WHERE id = $1",
+			"SELECT estado, deleted_at FROM tenants WHERE id = $1",
 			tenantID,
-		).Scan(&activo, &deletedAt)
+		).Scan(&estado, &deletedAt)
 
 		if err != nil {
 			log.Printf("[ERROR] Tenant no encontrado: %s - %v", tenantID, err)
@@ -38,7 +42,7 @@ func Tenant(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		if !activo || deletedAt != nil {
+		if estado != "activo" || deletedAt != nil {
 			utils.Forbidden(c, "Tenant suspendido o eliminado")
 			c.Abort()
 			return
@@ -46,6 +50,72 @@ func Tenant(db *sql.DB) gin.HandlerFunc {
 
 		// Guardar para uso posterior en transacciones
 		c.Set("tenant_id", tenantID)
+		c.Next()
+	}
+}
+
+// TenantFromRequest resuelve tenant_id desde headers/query/body para rutas publicas.
+// Soporta tanto slug (la-buena-mesa) como UUID del tenant.
+func TenantFromRequest(db *sql.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if existing := strings.TrimSpace(ObtenerTenantID(c)); existing != "" {
+			c.Next()
+			return
+		}
+
+		candidate := strings.TrimSpace(c.GetHeader("X-Tenant-ID"))
+		if candidate == "" {
+			candidate = strings.TrimSpace(c.GetHeader("X-Tenant-Slug"))
+		}
+		if candidate == "" {
+			candidate = strings.TrimSpace(c.Query("tenant_id"))
+		}
+		if candidate == "" {
+			candidate = strings.TrimSpace(c.Query("tenant_slug"))
+		}
+		if candidate == "" {
+			candidate = strings.TrimSpace(c.Query("slug"))
+		}
+
+		if candidate == "" && (c.Request.Method == "POST" || c.Request.Method == "PUT" || c.Request.Method == "PATCH") {
+			body, err := io.ReadAll(c.Request.Body)
+			if err == nil {
+				c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
+				if len(body) > 0 {
+					var payload map[string]any
+					if json.Unmarshal(body, &payload) == nil {
+						if v, ok := payload["tenant_id"].(string); ok {
+							candidate = strings.TrimSpace(v)
+						}
+						if candidate == "" {
+							if v, ok := payload["tenant_slug"].(string); ok {
+								candidate = strings.TrimSpace(v)
+							}
+						}
+						if candidate == "" {
+							if v, ok := payload["slug"].(string); ok {
+								candidate = strings.TrimSpace(v)
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if candidate != "" {
+			var tenantID string
+			err := db.QueryRow(`
+				SELECT id::text
+				FROM tenants
+				WHERE (id::text = $1 OR slug = $1)
+				  AND deleted_at IS NULL
+				LIMIT 1
+			`, candidate).Scan(&tenantID)
+			if err == nil {
+				c.Set("tenant_id", tenantID)
+			}
+		}
+
 		c.Next()
 	}
 }

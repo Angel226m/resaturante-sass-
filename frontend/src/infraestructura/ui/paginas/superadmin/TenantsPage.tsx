@@ -1,25 +1,26 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Building2, Plus, Globe, Pencil, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '@/infraestructura/store/useAuthStore';
 import { plataformaRepository } from '@/infraestructura/repositorios';
 import type { Tenant } from '@/dominio/entidades';
 import { Button, Badge, Card, Modal, Input, Select, DataTable } from '@/infraestructura/ui/componentes/comunes';
 import { formatDateTime } from '@/compartidos/utilidades';
 import type { Column } from '@/infraestructura/ui/componentes/comunes/DataTable';
 
-// ═══════════════════════════════════════════════════════════
-// Tenants — CRUD tenants (SuperAdmin)
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Tenants â€” CRUD tenants (SuperAdmin)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 const tenantSchema = z.object({
   nombre: z.string().min(1, 'Requerido'),
-  slug: z.string().min(1, 'Requerido').regex(/^[a-z0-9-]+$/, 'Solo letras minúsculas, números y guiones'),
+  slug: z.string().min(1, 'Requerido').regex(/^[a-z0-9-]+$/, 'Solo letras minÃºsculas, nÃºmeros y guiones'),
   plan_id: z.string().min(1, 'Seleccione plan'),
-  correo_contacto: z.string().email('Email inválido'),
+  correo_contacto: z.string().email('Email invÃ¡lido'),
   telefono_contacto: z.string().optional(),
   max_locales: z.coerce.number().min(1).optional(),
   max_usuarios: z.coerce.number().min(1).optional(),
@@ -29,17 +30,20 @@ type TenantForm = z.infer<typeof tenantSchema>;
 
 export default function TenantsPage() {
   const qc = useQueryClient();
+  const { isSuperAdmin, isLoading: authLoading } = useAuthStore();
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Tenant | null>(null);
 
   const { data: tenants = [], isLoading } = useQuery({
     queryKey: ['superadmin', 'tenants'],
     queryFn: () => plataformaRepository.listarTenants(),
+    enabled: isSuperAdmin && !authLoading,
   });
 
   const { data: planes = [] } = useQuery({
     queryKey: ['superadmin', 'planes'],
     queryFn: () => plataformaRepository.listarPlanes(),
+    enabled: isSuperAdmin && !authLoading,
   });
 
   const crear = useMutation({
@@ -87,7 +91,7 @@ export default function TenantsPage() {
             {t.nombre?.charAt(0)?.toUpperCase()}
           </div>
           <div>
-            <p className="font-medium text-slate-900 dark:text-white">{t.nombre}</p>
+            <p className="font-medium text-slate-900">{t.nombre}</p>
             <p className="text-xs text-slate-500 flex items-center gap-1"><Globe className="h-3 w-3" />{t.slug}</p>
           </div>
         </div>
@@ -132,7 +136,7 @@ export default function TenantsPage() {
       render: (t) => (
         <div className="flex gap-1">
           <Button size="sm" variant="ghost" onClick={() => openEdit(t)}><Pencil className="h-4 w-4" /></Button>
-          <Button size="sm" variant="ghost" onClick={() => { if (confirm('¿Eliminar tenant? Esto es irreversible.')) eliminar.mutate(t.id); }}>
+          <Button size="sm" variant="ghost" onClick={() => { if (confirm('Â¿Eliminar tenant? Esto es irreversible.')) eliminar.mutate(t.id); }}>
             <Trash2 className="h-4 w-4 text-red-500" />
           </Button>
         </div>
@@ -144,7 +148,7 @@ export default function TenantsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Building2 className="h-7 w-7 text-teal-600" /> Tenants
           </h1>
           <p className="text-slate-500">{tenants.length} restaurantes registrados</p>
@@ -180,11 +184,11 @@ export default function TenantsPage() {
           />
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Email Contacto" type="email" {...form.register('correo_contacto')} error={form.formState.errors.correo_contacto?.message} />
-            <Input label="Teléfono" {...form.register('telefono_contacto')} />
+            <Input label="TelÃ©fono" {...form.register('telefono_contacto')} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input type="number" label="Máx. Locales" {...form.register('max_locales')} />
-            <Input type="number" label="Máx. Usuarios" {...form.register('max_usuarios')} />
+            <Input type="number" label="MÃ¡x. Locales" {...form.register('max_locales')} />
+            <Input type="number" label="MÃ¡x. Usuarios" {...form.register('max_usuarios')} />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" type="button" onClick={() => { setShowModal(false); setEditing(null); }}>Cancelar</Button>
@@ -195,3 +199,4 @@ export default function TenantsPage() {
     </div>
   );
 }
+

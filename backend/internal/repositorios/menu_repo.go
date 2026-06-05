@@ -25,7 +25,8 @@ func NuevoMenuRepo(db *sql.DB) *MenuRepo {
 
 func (r *MenuRepo) ListarCategorias(tenantID string, localID int) ([]menu.CategoriaMenu, error) {
 	rows, err := r.DB.Query(`
-		SELECT c.id, c.tenant_id, c.local_id, c.nombre, c.descripcion, c.icono, c.color, c.orden,
+		SELECT c.id, c.tenant_id, c.local_id, c.nombre,
+			   COALESCE(c.descripcion, ''), COALESCE(c.icono, ''), COALESCE(c.color, ''), c.orden,
 			   c.activo, c.deleted_at, c.created_at,
 			   (SELECT COUNT(*) FROM productos_menu p WHERE p.categoria_menu_id = c.id AND p.deleted_at IS NULL) as cantidad_productos
 		FROM categorias_menu c
@@ -54,7 +55,8 @@ func (r *MenuRepo) ListarCategorias(tenantID string, localID int) ([]menu.Catego
 func (r *MenuRepo) ObtenerCategoria(tenantID string, id int) (*menu.CategoriaMenu, error) {
 	var c menu.CategoriaMenu
 	err := r.DB.QueryRow(`
-		SELECT id, tenant_id, local_id, nombre, descripcion, icono, color, orden,
+		SELECT id, tenant_id, local_id, nombre,
+			   COALESCE(descripcion, ''), COALESCE(icono, ''), COALESCE(color, ''), orden,
 			   activo, deleted_at, created_at
 		FROM categorias_menu WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
 	`, id, tenantID).Scan(&c.ID, &c.TenantID, &c.LocalID, &c.Nombre, &c.Descripcion,
@@ -135,8 +137,8 @@ func (r *MenuRepo) EliminarCategoria(tenantID string, id int) error {
 
 func (r *MenuRepo) ListarProductos(tenantID string, localID int, categoriaID *int) ([]menu.ProductoMenu, error) {
 	query := `
-		SELECT p.id, p.tenant_id, p.local_id, p.categoria_menu_id, p.nombre, p.descripcion,
-			   p.precio_base, p.imagen_url, p.tiempo_preparacion, p.calorias, p.alergenos,
+		SELECT p.id, p.tenant_id, COALESCE(p.local_id, 0), COALESCE(p.categoria_menu_id, 0), p.nombre, COALESCE(p.descripcion, ''),
+			   COALESCE(p.precio_base, p.precio, 0), COALESCE(p.imagen_url, ''), COALESCE(p.tiempo_preparacion, 0), p.calorias, COALESCE(p.alergenos, ''),
 			   p.es_vegetariano, p.es_vegano, p.es_gluten_free, p.es_popular, p.es_nuevo,
 			   p.disponible, p.orden, p.activo, p.deleted_at, p.created_at, p.updated_at,
 			   COALESCE(c.nombre, '') as nombre_categoria
@@ -177,8 +179,8 @@ func (r *MenuRepo) ListarProductos(tenantID string, localID int, categoriaID *in
 func (r *MenuRepo) ObtenerProducto(tenantID string, id int64) (*menu.ProductoMenu, error) {
 	var p menu.ProductoMenu
 	err := r.DB.QueryRow(`
-		SELECT p.id, p.tenant_id, p.local_id, p.categoria_menu_id, p.nombre, p.descripcion,
-			   p.precio_base, p.imagen_url, p.tiempo_preparacion, p.calorias, p.alergenos,
+		SELECT p.id, p.tenant_id, COALESCE(p.local_id, 0), COALESCE(p.categoria_menu_id, 0), p.nombre, COALESCE(p.descripcion, ''),
+			   COALESCE(p.precio_base, p.precio, 0), COALESCE(p.imagen_url, ''), COALESCE(p.tiempo_preparacion, 0), p.calorias, COALESCE(p.alergenos, ''),
 			   p.es_vegetariano, p.es_vegano, p.es_gluten_free, p.es_popular, p.es_nuevo,
 			   p.disponible, p.orden, p.activo, p.deleted_at, p.created_at, p.updated_at,
 			   COALESCE(c.nombre, '') as nombre_categoria
@@ -198,7 +200,7 @@ func (r *MenuRepo) ObtenerProducto(tenantID string, id int64) (*menu.ProductoMen
 
 	// Cargar imágenes
 	imgRows, err := r.DB.Query(`
-		SELECT id, tenant_id, producto_menu_id, url, alt_texto, orden, es_principal, created_at
+		SELECT id, tenant_id, producto_menu_id, url, COALESCE(alt_texto, ''), orden, es_principal, created_at
 		FROM producto_menu_imagenes WHERE producto_menu_id = $1 AND tenant_id = $2 ORDER BY orden
 	`, id, tenantID)
 	if err == nil {
@@ -469,7 +471,8 @@ func (r *MenuRepo) DesasignarGrupoDeProducto(tenantID string, productoID int64, 
 
 func (r *MenuRepo) ListarCombos(tenantID string, localID int) ([]menu.Combo, error) {
 	rows, err := r.DB.Query(`
-		SELECT id, tenant_id, local_id, nombre, descripcion, precio_combo, imagen_url,
+		SELECT id, tenant_id, local_id, nombre,
+			   COALESCE(descripcion, ''), precio_combo, COALESCE(imagen_url, ''),
 			   fecha_inicio, fecha_fin, disponible, activo, deleted_at, created_at, updated_at
 		FROM combos WHERE tenant_id = $1 AND local_id = $2 AND deleted_at IS NULL ORDER BY nombre
 	`, tenantID, localID)
@@ -491,7 +494,8 @@ func (r *MenuRepo) ListarCombos(tenantID string, localID int) ([]menu.Combo, err
 func (r *MenuRepo) ObtenerCombo(tenantID string, id int64) (*menu.Combo, error) {
 	var c menu.Combo
 	err := r.DB.QueryRow(`
-		SELECT id, tenant_id, local_id, nombre, descripcion, precio_combo, imagen_url,
+		SELECT id, tenant_id, local_id, nombre,
+			   COALESCE(descripcion, ''), precio_combo, COALESCE(imagen_url, ''),
 			   fecha_inicio, fecha_fin, disponible, activo, deleted_at, created_at, updated_at
 		FROM combos WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
 	`, id, tenantID).Scan(&c.ID, &c.TenantID, &c.LocalID, &c.Nombre, &c.Descripcion,
@@ -564,8 +568,10 @@ func (r *MenuRepo) CrearCombo(tenantID string, req menu.NuevoComboRequest) (*men
 
 func (r *MenuRepo) ListarPromociones(tenantID string, localID int) ([]menu.Promocion, error) {
 	rows, err := r.DB.Query(`
-		SELECT id, tenant_id, local_id, nombre, descripcion, tipo_descuento, valor_descuento,
-			   fecha_inicio, fecha_fin, dias_aplicables, hora_inicio, hora_fin,
+		SELECT id, tenant_id, local_id, nombre, COALESCE(descripcion, ''),
+			   tipo_descuento, valor_descuento,
+			   fecha_inicio, fecha_fin, COALESCE(dias_aplicables, ''),
+			   COALESCE(hora_inicio::text, ''), COALESCE(hora_fin::text, ''),
 			   aplica_a, producto_menu_id, categoria_id, usos_maximos, usos_actuales,
 			   activo, deleted_at, created_at, updated_at
 		FROM promociones WHERE tenant_id = $1 AND local_id = $2 AND deleted_at IS NULL ORDER BY created_at DESC
@@ -615,7 +621,8 @@ func (r *MenuRepo) CrearPromocion(tenantID string, req menu.NuevaPromocionReques
 
 func (r *MenuRepo) ListarCupones(tenantID string, localID int) ([]menu.Cupon, error) {
 	rows, err := r.DB.Query(`
-		SELECT id, tenant_id, local_id, codigo, descripcion, tipo_descuento, valor_descuento,
+		SELECT id, tenant_id, local_id, codigo, COALESCE(descripcion, ''),
+			   tipo_descuento, valor_descuento,
 			   monto_minimo, monto_max_descuento, fecha_inicio, fecha_fin,
 			   usos_maximos, usos_por_cliente, usos_actuales, cliente_id,
 			   activo, deleted_at, created_at, updated_at

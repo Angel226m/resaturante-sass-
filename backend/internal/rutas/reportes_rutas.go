@@ -15,13 +15,13 @@ import (
 
 func registrarRutasReportes(autenticado *gin.RouterGroup, db *sql.DB, reportesCtrl *controladores.ReportesController) {
 	reportes := autenticado.Group("/reportes")
-	reportes.Use(middleware.EsAdminOGerente())
 
-	// Dashboard
-	reportes.GET("/dashboard", reportesCtrl.ObtenerDashboard)
+	// Dashboard — visible para todo el personal interno
+	reportes.GET("/dashboard", middleware.EsPersonalInterno(), reportesCtrl.ObtenerDashboard)
 
-	// Resumen diario
+	// Resumen diario (solo admin/gerente)
 	resumen := reportes.Group("/resumen-diario")
+	resumen.Use(middleware.EsAdminOGerente())
 	{
 		resumen.GET("", reportesCtrl.ObtenerResumenDiario)
 		resumen.GET("/historial", reportesCtrl.ListarResumenes)

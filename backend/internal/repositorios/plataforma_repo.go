@@ -152,8 +152,8 @@ func (r *PlataformaRepo) EliminarPlan(id int) error {
 
 // ============ TENANTS ============
 
-const tenantColumns = `id, nombre, slug, ruc, correo_contacto, telefono, direccion,
-	logo_url, color_primario, color_secundario, tipo_restaurante, estado,
+const tenantColumns = `id, nombre, slug, COALESCE(ruc,''), COALESCE(correo_contacto,''), COALESCE(telefono,''), COALESCE(direccion,''),
+	COALESCE(logo_url,''), COALESCE(color_primario,''), COALESCE(color_secundario,''), COALESCE(tipo_restaurante,''), estado,
 	dias_trial, created_at, updated_at`
 
 func scanTenant(row interface {
@@ -341,7 +341,7 @@ func (r *PlataformaRepo) ObtenerSuscripcionActiva(tenantID string) (*plataforma.
 	err := r.DB.QueryRow(`
 		SELECT s.id, s.tenant_id, s.plan_id, s.estado, s.tipo_facturacion,
 			   s.fecha_inicio, s.fecha_vencimiento, s.fecha_cancelacion,
-			   s.precio_pagado, s.mercadopago_subscription_id,
+			   s.precio_pagado, COALESCE(s.mercadopago_subscription_id, ''),
 			   s.renovacion_automatica, s.created_at, s.updated_at,
 			   p.nombre
 		FROM suscripciones s
@@ -422,20 +422,36 @@ func (r *PlataformaRepo) CambiarPlan(tenantID string, req plataforma.CambiarPlan
 
 func (r *PlataformaRepo) ListarFacturas(tenantID string, pagina, porPagina int) ([]plataforma.FacturaPlataforma, int, error) {
 	var total int
-	err := r.DB.QueryRow("SELECT COUNT(*) FROM facturas_plataforma WHERE tenant_id = $1", tenantID).Scan(&total)
+	var err error
+	if tenantID == "" {
+		err = r.DB.QueryRow("SELECT COUNT(*) FROM facturas_plataforma").Scan(&total)
+	} else {
+		err = r.DB.QueryRow("SELECT COUNT(*) FROM facturas_plataforma WHERE tenant_id = $1", tenantID).Scan(&total)
+	}
 	if err != nil {
 		return nil, 0, err
 	}
 
 	offset := (pagina - 1) * porPagina
-	rows, err := r.DB.Query(`
-		SELECT id, tenant_id, suscripcion_id, numero_factura, concepto, monto, estado,
-			   fecha_emision, fecha_vencimiento, fecha_pago, mercadopago_payment_id,
-			   created_at
-		FROM facturas_plataforma
-		WHERE tenant_id = $1
-		ORDER BY created_at DESC LIMIT $2 OFFSET $3
-	`, tenantID, porPagina, offset)
+	var rows *sql.Rows
+	if tenantID == "" {
+		rows, err = r.DB.Query(`
+			SELECT id, tenant_id, suscripcion_id, numero_factura, concepto, monto, estado,
+				   fecha_emision, fecha_vencimiento, fecha_pago, mercadopago_payment_id,
+				   created_at
+			FROM facturas_plataforma
+			ORDER BY created_at DESC LIMIT $1 OFFSET $2
+		`, porPagina, offset)
+	} else {
+		rows, err = r.DB.Query(`
+			SELECT id, tenant_id, suscripcion_id, numero_factura, concepto, monto, estado,
+				   fecha_emision, fecha_vencimiento, fecha_pago, mercadopago_payment_id,
+				   created_at
+			FROM facturas_plataforma
+			WHERE tenant_id = $1
+			ORDER BY created_at DESC LIMIT $2 OFFSET $3
+		`, tenantID, porPagina, offset)
+	}
 	if err != nil {
 		return nil, 0, err
 	}

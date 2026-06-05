@@ -155,6 +155,9 @@ func ObtenerUsuarioID(c *gin.Context) int64 {
 	if v, ok := id.(int64); ok {
 		return v
 	}
+	if v, ok := id.(int); ok {
+		return int64(v)
+	}
 	return 0
 }
 

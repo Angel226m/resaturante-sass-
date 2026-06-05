@@ -124,6 +124,11 @@ body {
   min-height: 100vh;
 }
 
+html,
+body {
+  color-scheme: light;
+}
+
 /* ── Utilities ── */
 @utility glass {
   background: rgba(255, 255, 255, 0.8);
@@ -197,12 +202,7 @@ body {
   animation: fade-in 0.3s ease-out, slide-up 0.15s ease-out;
 }
 
-/* ── Dark mode body ── */
-.dark body,
-.dark {
-  background-color: var(--color-surface-950);
-  color: var(--color-surface-100);
-}
+/* Modo oscuro deshabilitado: la UI se mantiene en tema claro. */
 
 /* ── Focus-visible for accessibility (WCAG 2.1 AA) ── */
 :focus-visible {

@@ -1,11 +1,9 @@
-import { useEffect, useRef } from 'react';
+﻿import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/compartidos/utilidades';
 import Button from './Button';
 
-// ═══════════════════════════════════════════════════════════
-// Modal — overlay dialog con animación
-// ═══════════════════════════════════════════════════════════
+// Modal - overlay dialog with animation
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 
@@ -56,7 +54,7 @@ export default function Modal({ isOpen, onClose, title, description, children, f
       {/* Content */}
       <div
         className={cn(
-          'relative w-full rounded-2xl bg-white shadow-2xl dark:bg-slate-800',
+          'relative w-full rounded-2xl bg-white shadow-2xl',
           'animate-in fade-in slide-in-from-bottom-4 duration-300',
           'max-h-[90vh] flex flex-col',
           modalSizes[size],
@@ -64,9 +62,9 @@ export default function Modal({ isOpen, onClose, title, description, children, f
       >
         {/* Header */}
         {title && (
-          <div className="flex items-start justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-700">
+          <div className="flex items-start justify-between border-b border-slate-100 px-6 py-4">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
+              <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
               {description && <p className="mt-0.5 text-sm text-slate-500">{description}</p>}
             </div>
             <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0 -mr-2 -mt-1">
@@ -78,7 +76,7 @@ export default function Modal({ isOpen, onClose, title, description, children, f
         <div className="flex-1 overflow-y-auto px-6 py-4">{children}</div>
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4 dark:border-slate-700">
+          <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4">
             {footer}
           </div>
         )}
@@ -86,3 +84,4 @@ export default function Modal({ isOpen, onClose, title, description, children, f
     </div>
   );
 }
+

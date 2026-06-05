@@ -78,9 +78,8 @@ services:
       REDIS_PORT: "6379"
       REDIS_PASSWORD: ""
       CORS_ORIGIN: "http://localhost:3000"
-      # WARNING: dev-only secrets — NEVER use in production
-      JWT_SECRET: "dev-jwt-secret-restauflow-local-min32chars!!"
-      JWT_REFRESH_SECRET: "dev-jwt-refresh-restauflow-local-min32chars!"
+      JWT_SECRET: "b0493d967380362288432419f426f08c7c3e6255b9dc28c506d05c712a6e1e87"
+      JWT_REFRESH_SECRET: "01153c958b239751ae0f17d9aa7ccbf0b5257d6cc70ea1f4bda64caa94f73b4e"
       ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef"
       ENABLE_WEBSOCKETS: "true"
     depends_on:

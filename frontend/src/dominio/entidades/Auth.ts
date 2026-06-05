@@ -20,6 +20,7 @@ export interface Usuario {
 export interface LoginRequest {
   correo: string;
   contrasena: string;
+  tenant_slug: string;
   remember_me?: boolean;
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CalendarDays, Plus, Clock, Users, CheckCircle2, Phone, Pencil, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -11,13 +11,13 @@ import { Button, Badge, Card, Modal, Input, DataTable, StatCard, Tabs } from '@/
 import { formatDate, getStatusLabel } from '@/compartidos/utilidades';
 import type { Column } from '@/infraestructura/ui/componentes/comunes/DataTable';
 
-// ═══════════════════════════════════════════════════════════
-// Reservas — CRUD completo + estados
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Reservas â€” CRUD completo + estados
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 const reservaSchema = z.object({
-  cliente_nombre: z.string().min(1, 'Requerido'),
-  cliente_telefono: z.string().min(1, 'Requerido'),
+  cliente_nombre: z.string().optional().default(''),
+  cliente_telefono: z.string().optional().default(''),
   cliente_email: z.string().email().optional().or(z.literal('')),
   fecha: z.string().min(1, 'Requerido'),
   hora: z.string().min(1, 'Requerido'),
@@ -77,11 +77,17 @@ export default function ReservasPage() {
   };
 
   const onSubmit = (data: ReservaForm) => {
+    const payload: ReservaForm = {
+      ...data,
+      cliente_nombre: data.cliente_nombre?.trim() || 'Cliente sin nombre',
+      cliente_telefono: data.cliente_telefono?.trim() || '-',
+    };
+
     if (editingReserva) {
       // Update via state change or re-create
-      crear.mutate(data);
+      crear.mutate(payload);
     } else {
-      crear.mutate(data);
+      crear.mutate(payload);
     }
   };
 
@@ -114,7 +120,7 @@ export default function ReservasPage() {
       sortable: true,
       render: (r) => (
         <div>
-          <p className="font-medium text-slate-900 dark:text-white">{r.nombre_contacto}</p>
+          <p className="font-medium text-slate-900">{r.nombre_contacto}</p>
           <p className="text-xs text-slate-500 flex items-center gap-1"><Phone className="h-3 w-3" />{r.telefono_contacto}</p>
         </div>
       ),
@@ -125,7 +131,7 @@ export default function ReservasPage() {
       sortable: true,
       render: (r) => (
         <div>
-          <p className="font-medium text-slate-900 dark:text-white">{formatDate(r.fecha_reserva)}</p>
+          <p className="font-medium text-slate-900">{formatDate(r.fecha_reserva)}</p>
           <p className="text-xs text-slate-500 flex items-center gap-1"><Clock className="h-3 w-3" />{r.hora_inicio}</p>
         </div>
       ),
@@ -151,7 +157,7 @@ export default function ReservasPage() {
     {
       key: 'notas',
       label: 'Notas',
-      render: (r) => r.notas ? <span className="text-xs text-slate-500 max-w-[200px] truncate block">{r.notas}</span> : <span className="text-slate-400">\u2014</span>,
+      render: (r) => r.notas ? <span className="text-xs text-slate-500 max-w-[200px] truncate block">{r.notas}</span> : <span className="text-slate-400">-</span>,
     },
     {
       key: 'id',
@@ -190,10 +196,10 @@ export default function ReservasPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <CalendarDays className="h-7 w-7 text-teal-600" /> Reservas
           </h1>
-          <p className="text-slate-500">Gesti\u00f3n de reservas del restaurante</p>
+          <p className="text-slate-500">Gestion de reservas del restaurante</p>
         </div>
         <Button onClick={openNew}>
           <Plus className="h-4 w-4" /> Nueva Reserva
@@ -215,7 +221,7 @@ export default function ReservasPage() {
           data={filtered}
           isLoading={isLoading}
           searchable
-          searchPlaceholder="Buscar por cliente, tel\u00e9fono..."
+          searchPlaceholder="Buscar por cliente o telefono..."
           emptyMessage="No se encontraron reservas"
         />
       </Card>
@@ -224,8 +230,8 @@ export default function ReservasPage() {
       <Modal isOpen={showModal} onClose={closeModal} title={editingReserva ? 'Editar Reserva' : 'Nueva Reserva'} size="lg">
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Nombre del Cliente" {...form.register('cliente_nombre')} error={form.formState.errors.cliente_nombre?.message} />
-            <Input label="Tel\u00e9fono" {...form.register('cliente_telefono')} error={form.formState.errors.cliente_telefono?.message} leftIcon={<Phone className="h-4 w-4" />} />
+            <Input label="Nombre del cliente (opcional)" placeholder="Ej: Juan Perez" {...form.register('cliente_nombre')} error={form.formState.errors.cliente_nombre?.message} />
+            <Input label="Telefono (opcional)" placeholder="Ej: 999888777" {...form.register('cliente_telefono')} error={form.formState.errors.cliente_telefono?.message} leftIcon={<Phone className="h-4 w-4" />} />
           </div>
           <Input label="Email (opcional)" type="email" {...form.register('cliente_email')} />
           <div className="grid gap-4 sm:grid-cols-3">
@@ -242,18 +248,19 @@ export default function ReservasPage() {
         </form>
       </Modal>
 
-      {/* Modal confirmar cancelaci\u00f3n */}
+      {/* Modal confirmar cancelacion */}
       <Modal isOpen={!!showDeleteConfirm} onClose={() => setShowDeleteConfirm(null)} title="Cancelar Reserva" size="sm">
         <div className="space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            \u00bfSeguro que deseas cancelar la reserva de <strong>{showDeleteConfirm?.nombre_contacto}</strong> para el {showDeleteConfirm?.fecha_reserva}?
+          <p className="text-sm text-slate-600">
+            Seguro que deseas cancelar la reserva de <strong>{showDeleteConfirm?.nombre_contacto}</strong> para el {showDeleteConfirm?.fecha_reserva}?
           </p>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowDeleteConfirm(null)}>No, mantener</Button>
-            <Button variant="danger" onClick={() => showDeleteConfirm && handleDelete(showDeleteConfirm)}>S\u00ed, cancelar reserva</Button>
+            <Button variant="danger" onClick={() => showDeleteConfirm && handleDelete(showDeleteConfirm)}>Si, cancelar reserva</Button>
           </div>
         </div>
       </Modal>
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users, Plus, Phone, Mail, MapPin, Eye, Pencil, Trash2, Calendar } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -11,14 +11,11 @@ import { Button, Badge, Card, Modal, Input, DataTable } from '@/infraestructura/
 import { formatDate, formatCurrency, getInitials } from '@/compartidos/utilidades';
 import type { Column } from '@/infraestructura/ui/componentes/comunes/DataTable';
 
-// Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-// Clientes Ã¢â‚¬â€ CRUD, bÃƒÂºsqueda, visitas
-// Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
 
 const clienteSchema = z.object({
   nombres: z.string().min(1, 'Requerido'),
   apellidos: z.string().min(1, 'Requerido'),
-  correo: z.string().email('Email invÃƒÂ¡lido').optional().or(z.literal('')),
+  correo: z.string().email('Email invalido').optional().or(z.literal('')),
   celular: z.string().optional(),
   tipo_documento: z.string().optional(),
   numero_documento: z.string().optional(),
@@ -88,7 +85,7 @@ export default function ClientesPage() {
             {getInitials(`${c.nombres} ${c.apellidos}`)}
           </div>
           <div>
-            <p className="font-medium text-slate-900 dark:text-white">{c.nombres} {c.apellidos}</p>
+            <p className="font-medium text-slate-900">{c.nombres} {c.apellidos}</p>
             {c.correo && <p className="text-xs text-slate-500">{c.correo}</p>}
           </div>
         </div>
@@ -96,12 +93,12 @@ export default function ClientesPage() {
     },
     {
       key: 'telefono',
-      label: 'TelÃƒÂ©fono',
+      label: 'Telefono',
       render: (c) => c.celular ? (
-        <span className="flex items-center gap-1 text-sm text-slate-600 dark:text-slate-400">
+        <span className="flex items-center gap-1 text-sm text-slate-600">
           <Phone className="h-3.5 w-3.5" /> {c.celular}
         </span>
-      ) : <span className="text-slate-400">Ã¢â‚¬â€</span>,
+      ) : <span className="text-slate-400">-</span>,
     },
     {
       key: 'total_visitas',
@@ -117,13 +114,13 @@ export default function ClientesPage() {
       key: 'total_gastado',
       label: 'Total Gastado',
       sortable: true,
-      render: (c) => <span className="font-semibold text-slate-900 dark:text-white">{formatCurrency(c.total_compras || 0)}</span>,
+      render: (c) => <span className="font-semibold text-slate-900">{formatCurrency(c.total_compras || 0)}</span>,
     },
     {
       key: 'ultima_visita',
-      label: 'ÃƒÅ¡ltima Visita',
+      label: 'Ultima Visita',
       sortable: true,
-      render: (c) => c.actualizado_en ? <span className="text-sm text-slate-500">{formatDate(c.actualizado_en)}</span> : <span className="text-slate-400">Ã¢â‚¬â€</span>,
+      render: (c) => c.actualizado_en ? <span className="text-sm text-slate-500">{formatDate(c.actualizado_en)}</span> : <span className="text-slate-400">-</span>,
     },
     {
       key: 'id',
@@ -133,7 +130,7 @@ export default function ClientesPage() {
           <Button size="sm" variant="ghost" onClick={() => setShowDetail(c)}><Eye className="h-4 w-4" /></Button>
           <Button size="sm" variant="ghost" onClick={() => registrarVisita.mutate(String(c.id))}><Calendar className="h-4 w-4" /></Button>
           <Button size="sm" variant="ghost" onClick={() => openEdit(c)}><Pencil className="h-4 w-4" /></Button>
-          <Button size="sm" variant="ghost" onClick={() => { if (confirm('Ã‚Â¿Eliminar cliente?')) eliminar.mutate(String(c.id)); }}><Trash2 className="h-4 w-4 text-red-500" /></Button>
+          <Button size="sm" variant="ghost" onClick={() => { if (confirm('¿Eliminar cliente?')) eliminar.mutate(String(c.id)); }}><Trash2 className="h-4 w-4 text-red-500" /></Button>
         </div>
       ),
     },
@@ -143,7 +140,7 @@ export default function ClientesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Users className="h-7 w-7 text-teal-600" /> Clientes
           </h1>
           <p className="text-slate-500">{clientes.length} clientes registrados</p>
@@ -159,7 +156,7 @@ export default function ClientesPage() {
           data={clientes}
           isLoading={isLoading}
           searchable
-          searchPlaceholder="Buscar por nombre, email, telÃƒÂ©fono..."
+          searchPlaceholder="Buscar por nombre, email, telefono..."
           emptyMessage="No se encontraron clientes"
         />
       </Card>
@@ -173,11 +170,11 @@ export default function ClientesPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Email" type="email" {...form.register('correo')} error={form.formState.errors.correo?.message} leftIcon={<Mail className="h-4 w-4" />} />
-            <Input label="TelÃƒÂ©fono" {...form.register('celular')} leftIcon={<Phone className="h-4 w-4" />} />
+            <Input label="Telefono" {...form.register('celular')} leftIcon={<Phone className="h-4 w-4" />} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Tipo Documento" {...form.register('tipo_documento')} placeholder="DNI, RUC, etc." />
-            <Input label="NÃ‚Âº Documento" {...form.register('numero_documento')} />
+            <Input label="Nro Documento" {...form.register('numero_documento')} />
           </div>
           <Input label="Fecha de Nacimiento" type="date" {...form.register('fecha_nacimiento')} />
           <div className="flex justify-end gap-2 pt-2">
@@ -196,7 +193,7 @@ export default function ClientesPage() {
                 {getInitials(`${showDetail.nombres} ${showDetail.apellidos}`)}
               </div>
               <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white">{showDetail.nombres} {showDetail.apellidos}</h3>
+                <h3 className="text-xl font-bold text-slate-900">{showDetail.nombres} {showDetail.apellidos}</h3>
                 <div className="flex items-center gap-4 text-sm text-slate-500">
                   {showDetail.correo && <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{showDetail.correo}</span>}
                   {showDetail.celular && <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />{showDetail.celular}</span>}
@@ -205,29 +202,29 @@ export default function ClientesPage() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-xl bg-teal-50 p-4 dark:bg-teal-900/20">
-                <p className="text-2xl font-bold text-teal-700 dark:text-teal-400">{showDetail.cantidad_visitas || 0}</p>
+              <div className="rounded-xl bg-teal-50 p-4">
+                <p className="text-2xl font-bold text-teal-700">{showDetail.cantidad_visitas || 0}</p>
                 <p className="text-xs text-slate-500">Visitas totales</p>
               </div>
-              <div className="rounded-xl bg-emerald-50 p-4 dark:bg-emerald-900/20">
-                <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{formatCurrency(showDetail.total_compras || 0)}</p>
+              <div className="rounded-xl bg-emerald-50 p-4">
+                <p className="text-2xl font-bold text-emerald-700">{formatCurrency(showDetail.total_compras || 0)}</p>
                 <p className="text-xs text-slate-500">Total gastado</p>
               </div>
-              <div className="rounded-xl bg-blue-50 p-4 dark:bg-blue-900/20">
-                <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{showDetail.actualizado_en ? formatDate(showDetail.actualizado_en) : 'Ã¢â‚¬â€'}</p>
-                <p className="text-xs text-slate-500">ÃƒÅ¡ltima visita</p>
+              <div className="rounded-xl bg-blue-50 p-4">
+                <p className="text-2xl font-bold text-blue-700">{showDetail.actualizado_en ? formatDate(showDetail.actualizado_en) : '-'}</p>
+                <p className="text-xs text-slate-500">Ultima visita</p>
               </div>
             </div>
 
             {(showDetail as any).direcciones && (showDetail as any).direcciones.length > 0 && (
               <div>
-                <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Direcciones</h4>
+                <h4 className="font-semibold text-slate-700 mb-3">Direcciones</h4>
                 <div className="space-y-2">
                   {(showDetail as any).direcciones.map((d: any, i: number) => (
-                    <div key={i} className="flex items-start gap-2 rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
+                    <div key={i} className="flex items-start gap-2 rounded-lg bg-slate-50 p-3">
                       <MapPin className="mt-0.5 h-4 w-4 text-slate-400 shrink-0" />
                       <div>
-                        <p className="text-sm text-slate-700 dark:text-slate-300">{d.direccion}</p>
+                        <p className="text-sm text-slate-700">{d.direccion}</p>
                         {d.referencia && <p className="text-xs text-slate-500">{d.referencia}</p>}
                       </div>
                     </div>
@@ -238,7 +235,7 @@ export default function ClientesPage() {
 
             {(showDetail as any).notas && (
               <div>
-                <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Notas</h4>
+                <h4 className="font-semibold text-slate-700 mb-1">Notas</h4>
                 <p className="text-sm text-slate-500">{(showDetail as any).notas}</p>
               </div>
             )}
@@ -248,3 +245,5 @@ export default function ClientesPage() {
     </div>
   );
 }
+
+

@@ -1,9 +1,7 @@
-import { forwardRef, type InputHTMLAttributes } from 'react';
+﻿import { forwardRef, type InputHTMLAttributes } from 'react';
 import { cn } from '@/compartidos/utilidades';
 
-// ═══════════════════════════════════════════════════════════
-// Input — text field with label, error, icon support
-// ═══════════════════════════════════════════════════════════
+// Input - text field with label, error, icon support
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -18,7 +16,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="space-y-1.5">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+          <label htmlFor={inputId} className="block text-sm font-medium text-slate-700">
             {label}
           </label>
         )}
@@ -35,7 +33,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               'flex h-10 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 transition-colors',
               'focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20',
               'disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-50',
-              'dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500',
+              '',
               leftIcon && 'pl-10',
               rightIcon && 'pr-10',
               error && 'border-red-500 focus:border-red-500 focus:ring-red-500/20',
@@ -57,3 +55,5 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
 Input.displayName = 'Input';
 export default Input;
+
+

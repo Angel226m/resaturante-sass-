@@ -41,10 +41,16 @@ func (s *OrdenesService) CrearOrden(tenantID string, meseroID int64, req ordenes
 
 	// Publicar a cocina vía WebSocket
 	hub := utils.GetWSHub()
+	var mesaID interface{}
+	if req.MesaID != nil {
+		mesaID = *req.MesaID
+	}
 	hub.PublicarOrdenCocina(tenantID, req.LocalID, map[string]interface{}{
 		"tipo":         "nueva_orden",
 		"numero_orden": orden.NumeroOrden,
 		"orden_id":     orden.ID,
+		"mesa_id":      mesaID,
+		"mesero_id":    meseroID,
 	})
 
 	// Si es orden de salón, actualizar estado de la mesa
@@ -67,10 +73,20 @@ func (s *OrdenesService) CambiarEstadoOrden(tenantID string, id int64, req orden
 	// Notificar vía WebSocket
 	orden, _ := s.Repo.ObtenerOrden(tenantID, id)
 	if orden != nil {
+		var mesaID interface{}
+		if orden.MesaID != nil {
+			mesaID = *orden.MesaID
+		}
+		var meseroID interface{}
+		if orden.MeseroID != nil {
+			meseroID = *orden.MeseroID
+		}
 		utils.GetWSHub().PublicarOrdenCocina(tenantID, orden.LocalID, map[string]interface{}{
 			"tipo":         "estado_" + req.Estado,
 			"numero_orden": orden.NumeroOrden,
 			"orden_id":     orden.ID,
+			"mesa_id":      mesaID,
+			"mesero_id":    meseroID,
 		})
 	}
 	return nil

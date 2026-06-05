@@ -11,6 +11,42 @@ import { DEMO_ZONAS, DEMO_MESAS } from '@/compartidos/demoData';
 
 const isDemo = () => useAuthStore.getState().isDemoMode;
 
+function normalizeZona(raw: any): Zona {
+  return {
+    id: Number(raw?.id ?? raw?.id_zona ?? 0),
+    tenant_id: String(raw?.tenant_id ?? ''),
+    local_id: Number(raw?.local_id ?? 0),
+    nombre: String(raw?.nombre ?? ''),
+    descripcion: String(raw?.descripcion ?? ''),
+    piso: Number(raw?.piso ?? 1),
+    color: String(raw?.color ?? '#0d9488'),
+    orden: Number(raw?.orden ?? 0),
+    activo: Boolean(raw?.activo ?? true),
+    creado_en: String(raw?.creado_en ?? raw?.created_at ?? ''),
+    actualizado_en: String(raw?.actualizado_en ?? raw?.updated_at ?? ''),
+  } as Zona;
+}
+
+function normalizeMesa(raw: any): Mesa {
+  return {
+    id: Number(raw?.id ?? raw?.id_mesa ?? 0),
+    tenant_id: String(raw?.tenant_id ?? ''),
+    local_id: Number(raw?.local_id ?? 0),
+    zona_id: Number(raw?.zona_id ?? 0),
+    numero: Number(raw?.numero ?? 0),
+    capacidad: Number(raw?.capacidad ?? 0),
+    estado: String(raw?.estado ?? 'disponible') as Mesa['estado'],
+    forma: String(raw?.forma ?? 'cuadrada') as Mesa['forma'],
+    posicion_x: raw?.posicion_x ?? raw?.pos_x ?? null,
+    posicion_y: raw?.posicion_y ?? raw?.pos_y ?? null,
+    qr_codigo: String(raw?.qr_codigo ?? ''),
+    qr_url: String(raw?.qr_url ?? ''),
+    activo: Boolean(raw?.activo ?? true),
+    creado_en: String(raw?.creado_en ?? raw?.created_at ?? ''),
+    actualizado_en: String(raw?.actualizado_en ?? raw?.updated_at ?? ''),
+  } as Mesa;
+}
+
 const DEMO_LOCAL: Local = {
   id: 1, tenant_id: 'demo', nombre: 'RestauFlow Demo', direccion: 'Av. Larco 123, Miraflores',
   distrito: 'Miraflores', provincia: 'Lima', departamento: 'Lima',
@@ -46,13 +82,13 @@ export const localRepository = {
   eliminarLocal: (id: string) => isDemo() ? Promise.resolve(undefined as never) : apiDelete(`/locales/${id}`),
 
   // Zonas
-  listarZonas: (params?: Record<string, unknown>) => isDemo() ? Promise.resolve(DEMO_ZONAS) : apiGet<Zona[]>('/zonas', params),
+  listarZonas: (params?: Record<string, unknown>) => isDemo() ? Promise.resolve(DEMO_ZONAS) : apiGet<any[]>('/zonas', params).then((items) => (items ?? []).map(normalizeZona)),
   crearZona: (data: Partial<Zona>) => isDemo() ? Promise.resolve({ ...data, id: ++nextId } as Zona) : apiPost<Zona>('/zonas', data),
   actualizarZona: (id: string, data: Partial<Zona>) => isDemo() ? Promise.resolve({ ...data, id: Number(id) } as Zona) : apiPut<Zona>(`/zonas/${id}`, data),
   eliminarZona: (id: string) => isDemo() ? Promise.resolve(undefined as never) : apiDelete(`/zonas/${id}`),
 
   // Mesas
-  listarMesas: (params?: Record<string, unknown>) => isDemo() ? Promise.resolve(DEMO_MESAS) : apiGet<Mesa[]>('/mesas', params),
+  listarMesas: (params?: Record<string, unknown>) => isDemo() ? Promise.resolve(DEMO_MESAS) : apiGet<any[]>('/mesas', params).then((items) => (items ?? []).map(normalizeMesa)),
   crearMesa: (data: Partial<Mesa>) => isDemo() ? Promise.resolve({ ...data, id: ++nextId } as Mesa) : apiPost<Mesa>('/mesas', data),
   actualizarMesa: (id: string, data: Partial<Mesa>) => isDemo() ? Promise.resolve({ ...data, id: Number(id) } as Mesa) : apiPut<Mesa>(`/mesas/${id}`, data),
   eliminarMesa: (id: string) => isDemo() ? Promise.resolve(undefined as never) : apiDelete(`/mesas/${id}`),
@@ -61,7 +97,7 @@ export const localRepository = {
       const mesa = DEMO_MESAS.find(m => String(m.id) === id);
       return Promise.resolve({ ...mesa, estado } as Mesa);
     }
-    return apiPatch<Mesa>(`/mesas/${id}/estado`, { estado });
+    return apiPatch<any>(`/mesas/${id}/estado`, { estado }).then(normalizeMesa);
   },
 
   // Configuración

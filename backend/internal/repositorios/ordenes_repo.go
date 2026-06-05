@@ -31,7 +31,7 @@ func (r *OrdenesRepo) ListarOrdenes(tenantID string, filtros ordenes.FiltrosOrde
 			   o.tiempo_estimado, o.fecha_completada, o.deleted_at, o.created_at, o.updated_at,
 			   COALESCE(m.numero, '') as numero_mesa,
 			   COALESCE(c.nombres || ' ' || c.apellidos, '') as nombre_cliente,
-			   COALESCE(u.nombres, '') as nombre_mesero
+			   COALESCE(u.nombre, '') as nombre_mesero
 		FROM ordenes o
 		LEFT JOIN mesas m ON m.id = o.mesa_id AND m.tenant_id = o.tenant_id
 		LEFT JOIN clientes c ON c.id = o.cliente_id AND c.tenant_id = o.tenant_id
@@ -114,6 +114,30 @@ func (r *OrdenesRepo) ListarOrdenes(tenantID string, filtros ordenes.FiltrosOrde
 			&o.PromocionID, &o.CuponID, &o.TurnoCajaID, &o.Notas,
 			&o.TiempoEstimado, &o.FechaCompletada, &o.DeletedAt, &o.CreatedAt, &o.UpdatedAt,
 			&o.NumeroMesa, &o.NombreCliente, &o.NombreMesero)
+
+		itemRows, itemErr := r.DB.Query(`
+			SELECT i.id, i.tenant_id, i.orden_id, i.producto_menu_id, i.variante_id,
+				   i.cantidad, i.precio_unitario, i.precio_modificadores, i.descuento, i.subtotal,
+				   i.estado, COALESCE(i.notas, ''), i.created_at, i.updated_at,
+				   COALESCE(p.nombre, '') as nombre_producto,
+				   COALESCE(v.nombre, '') as nombre_variante
+			FROM items_orden i
+			LEFT JOIN productos_menu p ON p.id = i.producto_menu_id AND p.tenant_id = i.tenant_id
+			LEFT JOIN variantes_producto_menu v ON v.id = i.variante_id AND v.tenant_id = i.tenant_id
+			WHERE i.orden_id = $1 AND i.tenant_id = $2
+			ORDER BY i.created_at
+		`, o.ID, tenantID)
+		if itemErr == nil {
+			for itemRows.Next() {
+				var item ordenes.ItemOrden
+				itemRows.Scan(&item.ID, &item.TenantID, &item.OrdenID, &item.ProductoMenuID, &item.VarianteID,
+					&item.Cantidad, &item.PrecioUnitario, &item.PrecioModificadores, &item.Descuento, &item.Subtotal,
+					&item.Estado, &item.Notas, &item.CreatedAt, &item.UpdatedAt,
+					&item.NombreProducto, &item.NombreVariante)
+				o.Items = append(o.Items, item)
+			}
+			itemRows.Close()
+		}
 		lista = append(lista, o)
 	}
 	return lista, total, nil
@@ -125,11 +149,11 @@ func (r *OrdenesRepo) ObtenerOrden(tenantID string, id int64) (*ordenes.Orden, e
 		SELECT o.id, o.tenant_id, o.local_id, o.numero_orden, o.tipo_orden, o.estado,
 			   o.mesa_id, o.cliente_id, o.mesero_id, o.numero_personas,
 			   o.subtotal, o.descuento, o.igv, o.total,
-			   o.promocion_id, o.cupon_id, o.turno_caja_id, o.notas,
+			   o.promocion_id, o.cupon_id, o.turno_caja_id, COALESCE(o.notas, ''),
 			   o.tiempo_estimado, o.fecha_completada, o.deleted_at, o.created_at, o.updated_at,
 			   COALESCE(m.numero, '') as numero_mesa,
 			   COALESCE(c.nombres || ' ' || c.apellidos, '') as nombre_cliente,
-			   COALESCE(u.nombres, '') as nombre_mesero
+			   COALESCE(u.nombre, '') as nombre_mesero
 		FROM ordenes o
 		LEFT JOIN mesas m ON m.id = o.mesa_id AND m.tenant_id = o.tenant_id
 		LEFT JOIN clientes c ON c.id = o.cliente_id AND c.tenant_id = o.tenant_id
@@ -149,7 +173,7 @@ func (r *OrdenesRepo) ObtenerOrden(tenantID string, id int64) (*ordenes.Orden, e
 	itemRows, err := r.DB.Query(`
 		SELECT i.id, i.tenant_id, i.orden_id, i.producto_menu_id, i.variante_id,
 			   i.cantidad, i.precio_unitario, i.precio_modificadores, i.descuento, i.subtotal,
-			   i.estado, i.notas, i.created_at, i.updated_at,
+			   i.estado, COALESCE(i.notas, ''), i.created_at, i.updated_at,
 			   COALESCE(p.nombre, '') as nombre_producto,
 			   COALESCE(v.nombre, '') as nombre_variante
 		FROM items_orden i
@@ -191,8 +215,8 @@ func (r *OrdenesRepo) ObtenerOrden(tenantID string, id int64) (*ordenes.Orden, e
 	// Cargar historial
 	histRows, _ := r.DB.Query(`
 		SELECT h.id, h.tenant_id, h.orden_id, h.estado_anterior, h.estado_nuevo,
-			   h.usuario_id, h.motivo, h.created_at,
-			   COALESCE(u.nombres, '') as nombre_usuario
+			   h.usuario_id, COALESCE(h.notas, ''), h.created_at,
+			   COALESCE(u.nombre, '') as nombre_usuario
 		FROM historial_estados_orden h
 		LEFT JOIN usuarios u ON u.id = h.usuario_id AND u.tenant_id = h.tenant_id
 		WHERE h.orden_id = $1 AND h.tenant_id = $2 ORDER BY h.created_at
@@ -245,8 +269,10 @@ func (r *OrdenesRepo) CrearOrden(tenantID string, meseroID int64, req ordenes.Nu
 	for _, itemReq := range req.Items {
 		// Obtener precio del producto
 		var precioBase float64
-		tx.QueryRow("SELECT precio_base FROM productos_menu WHERE id = $1 AND tenant_id = $2",
-			itemReq.ProductoMenuID, tenantID).Scan(&precioBase)
+		if err := tx.QueryRow("SELECT COALESCE(precio_base, precio, 0) FROM productos_menu WHERE id = $1 AND tenant_id = $2",
+			itemReq.ProductoMenuID, tenantID).Scan(&precioBase); err != nil {
+			return nil, err
+		}
 
 		// Precio variante
 		var precioVariante float64
@@ -307,7 +333,7 @@ func (r *OrdenesRepo) CrearOrden(tenantID string, meseroID int64, req ordenes.Nu
 
 	// Historial inicial
 	tx.Exec(`
-		INSERT INTO historial_estados_orden (tenant_id, orden_id, estado_anterior, estado_nuevo, usuario_id, motivo)
+		INSERT INTO historial_estados_orden (tenant_id, orden_id, estado_anterior, estado_nuevo, usuario_id, notas)
 		VALUES ($1,$2,'','pendiente',$3,'Orden creada')
 	`, tenantID, o.ID, meseroID)
 
@@ -327,6 +353,8 @@ func (r *OrdenesRepo) CambiarEstadoOrden(tenantID string, id int64, req ordenes.
 	}
 	defer tx.Rollback()
 
+	estadoDestino := normalizarEstadoOrden(req.Estado)
+
 	var estadoAnterior string
 	var mesaID *int
 	err = tx.QueryRow("SELECT estado, mesa_id FROM ordenes WHERE id = $1 AND tenant_id = $2",
@@ -336,28 +364,47 @@ func (r *OrdenesRepo) CambiarEstadoOrden(tenantID string, id int64, req ordenes.
 	}
 
 	updateQ := "UPDATE ordenes SET estado = $1, updated_at = NOW()"
-	if req.Estado == "completada" || req.Estado == "entregada" {
+	if estadoDestino == "servida" || estadoDestino == "pagada" || estadoDestino == "cancelada" {
 		updateQ += ", fecha_completada = NOW()"
 	}
 	updateQ += " WHERE id = $2 AND tenant_id = $3 AND deleted_at IS NULL"
-	_, err = tx.Exec(updateQ, req.Estado, id, tenantID)
+	_, err = tx.Exec(updateQ, estadoDestino, id, tenantID)
 	if err != nil {
 		return err
 	}
 
 	// Historial
 	tx.Exec(`
-		INSERT INTO historial_estados_orden (tenant_id, orden_id, estado_anterior, estado_nuevo, usuario_id, motivo)
+		INSERT INTO historial_estados_orden (tenant_id, orden_id, estado_anterior, estado_nuevo, usuario_id, notas)
 		VALUES ($1,$2,$3,$4,$5,$6)
-	`, tenantID, id, estadoAnterior, req.Estado, usuarioID, req.Motivo)
+	`, tenantID, id, estadoAnterior, estadoDestino, usuarioID, req.Motivo)
 
 	// Si completada/cancelada y tiene mesa, liberar mesa
-	if (req.Estado == "completada" || req.Estado == "cancelada" || req.Estado == "entregada") && mesaID != nil {
+	if (estadoDestino == "servida" || estadoDestino == "pagada" || estadoDestino == "cancelada") && mesaID != nil {
 		tx.Exec("UPDATE mesas SET estado = 'disponible', updated_at = NOW() WHERE id = $1 AND tenant_id = $2",
 			*mesaID, tenantID)
 	}
 
 	return tx.Commit()
+}
+
+func normalizarEstadoOrden(estado string) string {
+	switch estado {
+	case "pendiente", "nueva":
+		return "nueva"
+	case "en_preparacion", "en_cocina", "preparando":
+		return "en_cocina"
+	case "lista", "listo":
+		return "listo"
+	case "servida", "entregada", "entregado":
+		return "servida"
+	case "pagada", "completada", "completado":
+		return "pagada"
+	case "cancelada", "cancelado":
+		return "cancelada"
+	default:
+		return estado
+	}
 }
 
 func (r *OrdenesRepo) AgregarItemOrden(tenantID string, ordenID int64, req ordenes.NuevoItemOrdenReq) error {
@@ -368,8 +415,10 @@ func (r *OrdenesRepo) AgregarItemOrden(tenantID string, ordenID int64, req orden
 	defer tx.Rollback()
 
 	var precioBase float64
-	tx.QueryRow("SELECT precio_base FROM productos_menu WHERE id = $1 AND tenant_id = $2",
-		req.ProductoMenuID, tenantID).Scan(&precioBase)
+	if err := tx.QueryRow("SELECT COALESCE(precio_base, precio, 0) FROM productos_menu WHERE id = $1 AND tenant_id = $2",
+		req.ProductoMenuID, tenantID).Scan(&precioBase); err != nil {
+		return err
+	}
 
 	var precioVariante float64
 	if req.VarianteID != nil {
@@ -440,11 +489,12 @@ func (r *OrdenesRepo) ContarOrdenesActivas(tenantID string, localID int) (int, e
 
 func (r *OrdenesRepo) ListarTicketsCocina(tenantID string, filtros ordenes.FiltrosTicketCocina) ([]ordenes.TicketCocina, error) {
 	query := `
-		SELECT t.id, t.tenant_id, t.orden_id, t.estacion_cocina, t.estado,
-			   t.prioridad, t.tiempo_estimado, t.fecha_inicio, t.fecha_terminado,
-			   t.cocinero_id, t.notas, t.created_at, t.updated_at,
+		SELECT t.id, t.tenant_id, t.orden_id, t.local_id, COALESCE(t.numero_ticket, 0),
+			   t.estacion_cocina, t.estado,
+			   COALESCE(t.prioridad, 0), COALESCE(t.tiempo_estimado, 0), t.fecha_inicio, t.fecha_terminado,
+			   t.cocinero_id, COALESCE(t.notas, ''), t.created_at, t.updated_at,
 			   COALESCE(o.numero_orden, '') as numero_orden,
-			   COALESCE(u.nombres, '') as nombre_cocinero
+			   COALESCE(u.nombre, '') as nombre_cocinero
 		FROM tickets_cocina t
 		LEFT JOIN ordenes o ON o.id = t.orden_id AND o.tenant_id = t.tenant_id
 		LEFT JOIN usuarios u ON u.id = t.cocinero_id AND u.tenant_id = t.tenant_id
@@ -477,10 +527,13 @@ func (r *OrdenesRepo) ListarTicketsCocina(tenantID string, filtros ordenes.Filtr
 	var tickets []ordenes.TicketCocina
 	for rows.Next() {
 		var t ordenes.TicketCocina
-		rows.Scan(&t.ID, &t.TenantID, &t.OrdenID, &t.EstacionCocina, &t.Estado,
+		if err := rows.Scan(&t.ID, &t.TenantID, &t.OrdenID, &t.LocalID, &t.NumeroTicket,
+			&t.EstacionCocina, &t.Estado,
 			&t.Prioridad, &t.TiempoEstimado, &t.FechaInicio, &t.FechaTerminado,
 			&t.CocineroID, &t.Notas, &t.CreatedAt, &t.UpdatedAt,
-			&t.NumeroOrden, &t.NombreCocinero)
+			&t.NumeroOrden, &t.NombreCocinero); err != nil {
+			return nil, err
+		}
 		tickets = append(tickets, t)
 	}
 	return tickets, nil
@@ -492,7 +545,8 @@ func (r *OrdenesRepo) CrearTicketCocina(tenantID string, ordenID int64, estacion
 		INSERT INTO tickets_cocina (tenant_id, orden_id, estacion_cocina, prioridad)
 		VALUES ($1,$2,$3,$4)
 		RETURNING id, tenant_id, orden_id, estacion_cocina, estado, prioridad,
-			tiempo_estimado, fecha_inicio, fecha_terminado, cocinero_id, notas, created_at, updated_at
+			tiempo_estimado, fecha_inicio, fecha_terminado, cocinero_id,
+			COALESCE(notas, ''), created_at, updated_at
 	`, tenantID, ordenID, estacion, prioridad,
 	).Scan(&t.ID, &t.TenantID, &t.OrdenID, &t.EstacionCocina, &t.Estado,
 		&t.Prioridad, &t.TiempoEstimado, &t.FechaInicio, &t.FechaTerminado,
@@ -513,7 +567,7 @@ func (r *OrdenesRepo) CambiarEstadoTicket(tenantID string, id int64, req ordenes
 	if req.Estado == "en_preparacion" {
 		query += ", fecha_inicio = NOW()"
 	}
-	if req.Estado == "terminado" {
+	if req.Estado == "terminado" || req.Estado == "listo" {
 		query += ", fecha_terminado = NOW()"
 	}
 

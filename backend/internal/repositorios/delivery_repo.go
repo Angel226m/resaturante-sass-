@@ -150,12 +150,12 @@ func (r *DeliveryRepo) ListarDeliveryOrdenes(tenantID string, filtros delivery.F
 	query := fmt.Sprintf(`
 		SELECT d.id, d.tenant_id, d.orden_id, d.zona_delivery_id, d.repartidor_id,
 			   d.direccion_entrega_id, d.estado_delivery, d.costo_envio, d.distancia_km,
-			   d.instrucciones_entrega, d.codigo_confirmacion,
+			   COALESCE(d.instrucciones_entrega, ''), COALESCE(d.codigo_confirmacion, ''),
 			   d.latitud_entrega, d.longitud_entrega,
 			   d.tiempo_estimado_entrega, d.tiempo_real_entrega,
 			   d.created_at, d.updated_at,
 			   COALESCE(o.numero_orden, '') as numero_orden,
-			   COALESCE(u.nombres, '') as nombre_repartidor,
+			   COALESCE(u.nombre || ' ' || u.apellidos, '') as nombre_repartidor,
 			   COALESCE(zd.nombre, '') as nombre_zona
 		FROM delivery_ordenes d
 		LEFT JOIN ordenes o ON o.id = d.orden_id AND o.tenant_id = d.tenant_id
@@ -189,12 +189,12 @@ func (r *DeliveryRepo) ObtenerDeliveryOrden(tenantID string, id int64) (*deliver
 	err := r.DB.QueryRow(`
 		SELECT d.id, d.tenant_id, d.orden_id, d.zona_delivery_id, d.repartidor_id,
 			   d.direccion_entrega_id, d.estado_delivery, d.costo_envio, d.distancia_km,
-			   d.instrucciones_entrega, d.codigo_confirmacion,
+			   COALESCE(d.instrucciones_entrega, ''), COALESCE(d.codigo_confirmacion, ''),
 			   d.latitud_entrega, d.longitud_entrega,
 			   d.tiempo_estimado_entrega, d.tiempo_real_entrega,
 			   d.created_at, d.updated_at,
 			   COALESCE(o.numero_orden, '') as numero_orden,
-			   COALESCE(u.nombres, '') as nombre_repartidor
+			   COALESCE(u.nombre || ' ' || u.apellidos, '') as nombre_repartidor
 		FROM delivery_ordenes d
 		LEFT JOIN ordenes o ON o.id = d.orden_id AND o.tenant_id = d.tenant_id
 		LEFT JOIN usuarios u ON u.id = d.repartidor_id AND u.tenant_id = d.tenant_id

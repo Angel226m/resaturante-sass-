@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, ShoppingCart, Eye, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ordenesRepository, menuRepository } from '@/infraestructura/repositorios';
+import { useUIStore } from '@/infraestructura/store/useUIStore';
 import type { Orden, ProductoMenu } from '@/dominio/entidades';
 import { Button, Card, Badge, DataTable, Modal, Tabs, Input } from '@/infraestructura/ui/componentes/comunes';
 import type { Column } from '@/infraestructura/ui/componentes/comunes';
@@ -19,17 +20,20 @@ export default function OrdenesPage() {
   const [notas, setNotas] = useState('');
   const [newItems, setNewItems] = useState<NewOrderItem[]>([]);
   const qc = useQueryClient();
+  const localId = useUIStore((s) => s.localSeleccionadoId);
 
-  const { data: ordenes = [], isLoading } = useQuery({
+  const { data: ordenesRaw, isLoading } = useQuery({
     queryKey: ['ordenes'],
     queryFn: () => ordenesRepository.listarOrdenes(),
     refetchInterval: 10000,
   });
+  const ordenes: Orden[] = ordenesRaw ?? [];
 
-  const { data: productos = [] } = useQuery({
+  const { data: productosRaw } = useQuery({
     queryKey: ['menu', 'productos'],
     queryFn: () => menuRepository.listarProductos(),
   });
+  const productos: ProductoMenu[] = productosRaw ?? [];
 
   const crearOrden = useMutation({
     mutationFn: (data: Partial<Orden>) => ordenesRepository.crearOrden(data),
@@ -62,8 +66,11 @@ export default function OrdenesPage() {
   const orderTotal = newItems.reduce((sum, i) => sum + i.precio_unitario * i.cantidad, 0);
 
   const submitOrder = () => {
+    if (!localId) { toast.error('Selecciona un local antes de crear la orden'); return; }
     if (newItems.length === 0) { toast.error('Agrega al menos un producto'); return; }
+    if (orderType === 'mesa' && !mesaId) { toast.error('Ingresa el numero de mesa'); return; }
     crearOrden.mutate({
+      local_id: Number(localId),
       tipo_orden: orderType,
       mesa_id: mesaId ? parseInt(mesaId) : null,
       notas,
@@ -82,7 +89,7 @@ export default function OrdenesPage() {
   const tabs = [
     { id: 'todas', label: 'Todas', count: ordenes.length },
     { id: 'pendiente', label: 'Pendientes', count: ordenes.filter((o: Orden) => o.estado === 'pendiente').length },
-    { id: 'en_preparacion', label: 'En preparaci\u00f3n', count: ordenes.filter((o: Orden) => o.estado === 'en_preparacion').length },
+    { id: 'en_preparacion', label: 'En preparacion', count: ordenes.filter((o: Orden) => o.estado === 'en_preparacion').length },
     { id: 'lista', label: 'Listas', count: ordenes.filter((o: Orden) => o.estado === 'lista').length },
     { id: 'entregada', label: 'Completadas', count: ordenes.filter((o: Orden) => o.estado === 'entregada').length },
   ];
@@ -123,8 +130,8 @@ export default function OrdenesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">\u00d3rdenes</h1>
-          <p className="text-slate-500">Gestiona las \u00f3rdenes de tu restaurante</p>
+          <h1 className="text-2xl font-bold text-slate-900">Ordenes</h1>
+          <p className="text-slate-500">Gestiona las ordenes de tu restaurante</p>
         </div>
         <Button leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowNewOrder(true)}>Nueva orden</Button>
       </div>
@@ -138,8 +145,8 @@ export default function OrdenesPage() {
           keyExtractor={(o) => String(o.id)}
           isLoading={isLoading}
           searchable
-          searchPlaceholder="Buscar por n\u00famero de orden..."
-          emptyMessage="No hay \u00f3rdenes"
+          searchPlaceholder="Buscar por numero de orden..."
+          emptyMessage="No hay ordenes"
           emptyIcon={<ShoppingCart className="h-8 w-8 text-slate-300" />}
         />
       </Card>
@@ -169,15 +176,15 @@ export default function OrdenesPage() {
             {selectedOrden.notas && (
               <div>
                 <p className="text-sm text-slate-500">Notas</p>
-                <p className="mt-1 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-700">{selectedOrden.notas}</p>
+                <p className="mt-1 rounded-lg bg-slate-50 p-3 text-sm">{selectedOrden.notas}</p>
               </div>
             )}
             {selectedOrden.items && selectedOrden.items.length > 0 && (
               <div>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Items</p>
+                <p className="text-sm font-medium text-slate-700 mb-2">Items</p>
                 <div className="space-y-2">
                   {selectedOrden.items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-2 dark:bg-slate-700">
+                    <div key={item.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-2">
                       <div>
                         <p className="text-sm font-medium">{item.nombre_producto}</p>
                         <p className="text-xs text-slate-400">x{item.cantidad}</p>
@@ -205,42 +212,42 @@ export default function OrdenesPage() {
           {/* Left: Config */}
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Tipo de orden</label>
-              <select className="flex h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" value={orderType} onChange={(e) => setOrderType(e.target.value as any)}>
+              <label className="block text-sm font-medium text-slate-700">Tipo de orden</label>
+              <select className="flex h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm" value={orderType} onChange={(e) => setOrderType(e.target.value as any)}>
                 <option value="mesa">En mesa</option>
                 <option value="para_llevar">Para llevar</option>
                 <option value="delivery">Delivery</option>
               </select>
             </div>
             {orderType === 'mesa' && (
-              <Input label="N\u00famero de mesa" type="number" placeholder="Ej: 5" value={mesaId} onChange={(e) => setMesaId(e.target.value)} />
+              <Input label="Numero de mesa" type="number" placeholder="Ej: 5" value={mesaId} onChange={(e) => setMesaId(e.target.value)} />
             )}
             <Input label="Notas" placeholder="Instrucciones especiales..." value={notas} onChange={(e) => setNotas(e.target.value)} />
 
             {/* Selected items */}
             <div>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Items seleccionados ({newItems.length})</p>
+              <p className="text-sm font-medium text-slate-700 mb-2">Items seleccionados ({newItems.length})</p>
               {newItems.length === 0 ? (
-                <p className="text-sm text-slate-400 py-4 text-center">Selecciona productos del cat\u00e1logo</p>
+                <p className="text-sm text-slate-400 py-4 text-center">Selecciona productos del catalogo</p>
               ) : (
                 <div className="space-y-2 max-h-60 overflow-y-auto">
                   {newItems.map((item) => (
-                    <div key={item.producto_menu_id} className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700">
+                    <div key={item.producto_menu_id} className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{item.nombre}</p>
                         <p className="text-xs text-slate-400">{formatCurrency(item.precio_unitario)} c/u</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => updateQty(item.producto_menu_id, item.cantidad - 1)} className="h-7 w-7 rounded-lg bg-slate-100 text-sm font-bold hover:bg-slate-200 dark:bg-slate-700">-</button>
+                        <button onClick={() => updateQty(item.producto_menu_id, item.cantidad - 1)} className="h-7 w-7 rounded-lg bg-slate-100 text-sm font-bold hover:bg-slate-200">-</button>
                         <span className="text-sm font-semibold w-6 text-center">{item.cantidad}</span>
-                        <button onClick={() => updateQty(item.producto_menu_id, item.cantidad + 1)} className="h-7 w-7 rounded-lg bg-slate-100 text-sm font-bold hover:bg-slate-200 dark:bg-slate-700">+</button>
+                        <button onClick={() => updateQty(item.producto_menu_id, item.cantidad + 1)} className="h-7 w-7 rounded-lg bg-slate-100 text-sm font-bold hover:bg-slate-200">+</button>
                         <button onClick={() => removeItem(item.producto_menu_id)} className="ml-1 text-red-400 hover:text-red-600"><Trash2 className="h-4 w-4" /></button>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-              <div className="flex justify-between mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex justify-between mt-3 pt-3 border-t border-slate-200">
                 <span className="text-sm font-medium text-slate-600">Total</span>
                 <span className="text-lg font-bold text-teal-600">{formatCurrency(orderTotal)}</span>
               </div>
@@ -249,13 +256,13 @@ export default function OrdenesPage() {
 
           {/* Right: Product catalog */}
           <div>
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Cat\u00e1logo de productos</p>
+            <p className="text-sm font-medium text-slate-700 mb-2">Catalogo de productos</p>
             <div className="space-y-1.5 max-h-96 overflow-y-auto">
               {productos.filter((p: ProductoMenu) => p.disponible).map((p: ProductoMenu) => (
-                <button key={p.id} type="button" onClick={() => addItem(p)} className="flex w-full items-center justify-between rounded-lg border border-slate-200 px-3 py-2.5 text-left hover:bg-teal-50 hover:border-teal-300 transition-colors dark:border-slate-700 dark:hover:bg-teal-900/20">
+                <button key={p.id} type="button" onClick={() => addItem(p)} className="flex w-full items-center justify-between rounded-lg border border-slate-200 px-3 py-2.5 text-left hover:bg-teal-50 hover:border-teal-300 transition-colors">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{p.nombre}</p>
-                    <p className="text-xs text-slate-400 truncate">{p.descripcion || 'Sin descripci\u00f3n'}</p>
+                    <p className="text-sm font-medium text-slate-900 truncate">{p.nombre}</p>
+                    <p className="text-xs text-slate-400 truncate">{p.descripcion || 'Sin descripcion'}</p>
                   </div>
                   <span className="ml-2 text-sm font-semibold text-teal-600 shrink-0">{formatCurrency(p.precio_base)}</span>
                 </button>

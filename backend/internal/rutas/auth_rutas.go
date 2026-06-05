@@ -15,23 +15,22 @@ import (
 
 func registrarRutasAuthPublico(api *gin.RouterGroup, db *sql.DB, rdb *redis.Client, authCtrl *controladores.AuthController) {
 	auth := api.Group("/auth")
-	auth.Use(middleware.Tenant(db))
 
 	// Login con credenciales (rate limited)
-	auth.POST("/login", middleware.RateLimitLogin(rdb), authCtrl.Login)
+	auth.POST("/login", middleware.TenantFromRequest(db), middleware.Tenant(db), middleware.RateLimitLogin(rdb), authCtrl.Login)
 
 	// Login con PIN (rate limited)
-	auth.POST("/login-pin", middleware.RateLimitLogin(rdb), authCtrl.LoginPIN)
+	auth.POST("/login-pin", middleware.TenantFromRequest(db), middleware.Tenant(db), middleware.RateLimitLogin(rdb), authCtrl.LoginPIN)
 
-	// Refresh token
+	// Refresh token (no usa Tenant porque AuthRefresh setea tenant_id en contexto)
 	auth.POST("/refresh", middleware.AuthRefresh(db), authCtrl.RefrescarToken)
 
 	// Logout (no requiere auth estricto)
 	auth.POST("/logout", authCtrl.Logout)
 
 	// Recuperación de contraseña
-	auth.POST("/recuperar-password", middleware.RateLimitRecuperacion(rdb), authCtrl.SolicitarRecuperacion)
-	auth.POST("/resetear-password", authCtrl.RecuperarContrasena)
+	auth.POST("/recuperar-password", middleware.TenantFromRequest(db), middleware.Tenant(db), middleware.RateLimitRecuperacion(rdb), authCtrl.SolicitarRecuperacion)
+	auth.POST("/resetear-password", middleware.TenantFromRequest(db), middleware.Tenant(db), authCtrl.RecuperarContrasena)
 }
 
 func registrarRutasAuthPrivado(autenticado *gin.RouterGroup, authCtrl *controladores.AuthController) {

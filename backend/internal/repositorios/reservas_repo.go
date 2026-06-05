@@ -22,9 +22,11 @@ func NuevoReservasRepo(db *sql.DB) *ReservasRepo {
 func (r *ReservasRepo) ListarReservas(tenantID string, filtros reservas.FiltrosReserva) ([]reservas.Reserva, int, error) {
 	query := `
 		SELECT r.id, r.tenant_id, r.local_id, r.cliente_id, r.mesa_id,
-			   r.codigo_confirmacion, r.nombre_contacto, r.telefono_contacto, r.correo_contacto,
+			   r.codigo_confirmacion, r.nombre_contacto, r.telefono_contacto,
+			   COALESCE(r.correo_contacto, ''),
 			   r.fecha_reserva, r.hora_inicio, r.hora_fin, r.numero_personas,
-			   r.estado, r.notas, r.motivo_cancelacion, r.deleted_at, r.created_at, r.updated_at,
+			   r.estado, COALESCE(r.notas, ''), COALESCE(r.motivo_cancelacion, ''),
+			   r.deleted_at, r.created_at, r.updated_at,
 			   COALESCE(c.nombres || ' ' || c.apellidos, '') as nombre_cliente,
 			   COALESCE(m.numero, '') as numero_mesa,
 			   COALESCE(z.nombre, '') as nombre_zona
@@ -102,9 +104,11 @@ func (r *ReservasRepo) ObtenerReserva(tenantID string, id int64) (*reservas.Rese
 	var rv reservas.Reserva
 	err := r.DB.QueryRow(`
 		SELECT r.id, r.tenant_id, r.local_id, r.cliente_id, r.mesa_id,
-			   r.codigo_confirmacion, r.nombre_contacto, r.telefono_contacto, r.correo_contacto,
+			   r.codigo_confirmacion, r.nombre_contacto, r.telefono_contacto,
+			   COALESCE(r.correo_contacto, ''),
 			   r.fecha_reserva, r.hora_inicio, r.hora_fin, r.numero_personas,
-			   r.estado, r.notas, r.motivo_cancelacion, r.deleted_at, r.created_at, r.updated_at,
+			   r.estado, COALESCE(r.notas, ''), COALESCE(r.motivo_cancelacion, ''),
+			   r.deleted_at, r.created_at, r.updated_at,
 			   COALESCE(c.nombres || ' ' || c.apellidos, '') as nombre_cliente,
 			   COALESCE(m.numero, '') as numero_mesa,
 			   COALESCE(z.nombre, '') as nombre_zona
@@ -124,7 +128,7 @@ func (r *ReservasRepo) ObtenerReserva(tenantID string, id int64) (*reservas.Rese
 
 	// Cargar historial
 	histRows, err := r.DB.Query(`
-		SELECT id, tenant_id, reserva_id, estado_anterior, estado_nuevo, usuario_id, motivo, created_at
+		SELECT id, tenant_id, reserva_id, COALESCE(estado_anterior, ''), estado_nuevo, usuario_id, COALESCE(motivo, ''), created_at
 		FROM historial_estados_reserva WHERE reserva_id = $1 AND tenant_id = $2 ORDER BY created_at
 	`, id, tenantID)
 	if err == nil {
@@ -156,7 +160,7 @@ func (r *ReservasRepo) CrearReserva(tenantID string, req reservas.NuevaReservaRe
 		RETURNING id, tenant_id, local_id, cliente_id, mesa_id, codigo_confirmacion,
 			nombre_contacto, telefono_contacto, correo_contacto,
 			fecha_reserva, hora_inicio, hora_fin, numero_personas,
-			estado, notas, motivo_cancelacion, deleted_at, created_at, updated_at
+			estado, notas, COALESCE(motivo_cancelacion, ''), deleted_at, created_at, updated_at
 	`, tenantID, req.LocalID, req.ClienteID, req.MesaID, codigo,
 		req.NombreContacto, req.TelefonoContacto, req.CorreoContacto,
 		req.FechaReserva, req.HoraInicio, req.HoraFin, req.NumeroPersonas, req.Notas,

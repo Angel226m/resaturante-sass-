@@ -10,7 +10,7 @@
  * Usa MemoryRouter + mocks de store/navigate para correr en jsdom.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import LoginPage from '@/infraestructura/ui/paginas/auth/LoginPage';
@@ -268,8 +268,6 @@ describe('E2E — toggle contraseña', () => {
     renderLogin();
     await user.click(screen.getByText('Iniciar sesión con credenciales'));
 
-    // El botón de toggle de contraseña está junto al input
-    const toggleBtn = screen.getByRole('button', { name: '' });
     // Filtramos por el que está dentro del grupo del password
     const passwordInput = screen.getByPlaceholderText('••••••••');
     const togglePasswordBtn = passwordInput.parentElement?.querySelector('button');

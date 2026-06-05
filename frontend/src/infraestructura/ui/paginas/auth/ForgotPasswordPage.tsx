@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,19 +36,19 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12 dark:bg-slate-950">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-md">
         <Link to="/login" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-teal-600 mb-8">
           <ArrowLeft className="h-4 w-4" /> Volver al login
         </Link>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           {sent ? (
             <div className="text-center py-4">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-900/20">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
                 <CheckCircle2 className="h-8 w-8 text-emerald-500" />
               </div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Email enviado</h2>
+              <h2 className="text-xl font-bold text-slate-900">Email enviado</h2>
               <p className="mt-2 text-sm text-slate-500">
                 Si existe una cuenta con ese email, recibirás las instrucciones para restablecer tu contraseña.
               </p>
@@ -59,7 +59,7 @@ export default function ForgotPasswordPage() {
           ) : (
             <>
               <div className="mb-8">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Recuperar contraseña</h2>
+                <h2 className="text-2xl font-bold text-slate-900">Recuperar contraseña</h2>
                 <p className="mt-1 text-slate-500">Te enviaremos un enlace para restablecer tu contraseña</p>
               </div>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -74,3 +74,4 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
+

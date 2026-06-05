@@ -22,6 +22,40 @@ func RegistrarRutas(router *gin.Engine, db *sql.DB, rdb *redis.Client, cfg *conf
 	// Error handler global
 	router.Use(middleware.ErrorHandler())
 
+	// ===== Health Check (sin autenticación) =====
+	router.GET("/health", func(c *gin.Context) {
+		ctx := c.Request.Context()
+		dbOK := db.PingContext(ctx) == nil
+		redisOK := rdb.Ping(ctx).Err() == nil
+
+		status := "ok"
+		code := 200
+		if !dbOK || !redisOK {
+			status = "degraded"
+			code = 503
+		}
+
+		c.JSON(code, gin.H{
+			"status":  status,
+			"service": "restauflow-backend",
+			"checks": gin.H{
+				"db":    map[string]bool{"ok": dbOK},
+				"redis": map[string]bool{"ok": redisOK},
+			},
+		})
+	})
+	router.HEAD("/health", func(c *gin.Context) {
+		ctx := c.Request.Context()
+		dbOK := db.PingContext(ctx) == nil
+		redisOK := rdb.Ping(ctx).Err() == nil
+
+		code := 200
+		if !dbOK || !redisOK {
+			code = 503
+		}
+		c.Status(code)
+	})
+
 	// ===== Repositorios =====
 	plataformaRepo := repositorios.NuevoPlataformaRepo(db)
 	authRepo := repositorios.NuevoAuthRepo(db)

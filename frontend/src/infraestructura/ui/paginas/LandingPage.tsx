@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ChefHat, ShoppingCart, Users, BarChart3, CreditCard, CalendarDays, Truck, Shield,
@@ -8,11 +8,9 @@ import {
 } from 'lucide-react';
 import Button from '@/infraestructura/ui/componentes/comunes/Button';
 
-// ═══════════════════════════════════════════════════════════
-// Landing Page — hero, features, demo, testimonials, pricing, FAQ, CTA
-// ═══════════════════════════════════════════════════════════
+// Landing Page - hero, features, demo, testimonials, pricing, FAQ, CTA
 
-// ── Animated counter hook ──
+// Animated counter hook
 function useCountUp(end: number, duration = 2000, suffix = '') {
   const [value, setValue] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
@@ -29,7 +27,6 @@ function useCountUp(end: number, duration = 2000, suffix = '') {
             setValue(Math.floor(eased * end));
             if (progress < 1) requestAnimationFrame(step);
           };
-          requestAnimationFrame(step);
         }
       },
       { threshold: 0.3 },
@@ -67,7 +64,7 @@ const testimonials = [
     stars: 5,
   },
   {
-    name: 'Carlos Huamán',
+    name: 'Carlos HuamÃ¡n',
     role: 'Chef Ejecutivo, Fusión 420',
     avatar: 'CH',
     text: 'El KDS para cocina es increíble. Veo los platos agrupados por tipo y puedo marcar agotados al instante.',
@@ -110,13 +107,13 @@ const faqs = [
 function FAQ({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-slate-200 dark:border-slate-700">
+    <div className="border-b border-slate-200">
       <button onClick={() => setOpen(!open)} className="flex w-full items-center justify-between py-5 text-left">
-        <span className="text-base font-medium text-slate-900 dark:text-white">{q}</span>
+        <span className="text-base font-medium text-slate-900">{q}</span>
         {open ? <ChevronUp className="h-5 w-5 text-slate-400 shrink-0" /> : <ChevronDown className="h-5 w-5 text-slate-400 shrink-0" />}
       </button>
       <div className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-40 pb-5' : 'max-h-0'}`}>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{a}</p>
+        <p className="text-sm text-slate-600 leading-relaxed">{a}</p>
       </div>
     </div>
   );
@@ -125,19 +122,19 @@ function FAQ({ q, a }: { q: string; a: string }) {
 function DashboardMockup() {
   return (
     <div className="relative mx-auto max-w-4xl">
-      {/* Browser chrome */}
-      <div className="rounded-xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-200/50 dark:border-slate-700 dark:bg-slate-800 dark:shadow-slate-900/50 overflow-hidden">
-        <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 px-4 py-2.5">
+          {/* Browser chrome */}
+      <div className="rounded-xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-200/50 overflow-hidden">
+        <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <div className="flex gap-1.5">
             <div className="h-3 w-3 rounded-full bg-red-400" />
             <div className="h-3 w-3 rounded-full bg-amber-400" />
             <div className="h-3 w-3 rounded-full bg-green-400" />
           </div>
-          <div className="ml-4 flex-1 rounded-md bg-slate-100 dark:bg-slate-700 px-3 py-1 text-xs text-slate-400">
+          <div className="ml-4 flex-1 rounded-md bg-slate-100 px-3 py-1 text-xs text-slate-400">
             app.restauflow.com/dashboard
           </div>
         </div>
-        {/* Mock dashboard content */}
+          {/* Mock dashboard content */}
         <div className="p-4 sm:p-6 space-y-4">
           {/* Stat cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -147,17 +144,17 @@ function DashboardMockup() {
               { label: 'Mesas ocupadas', value: '3/12', icon: <Grid3X3 className="h-4 w-4" />, color: 'text-blue-500' },
               { label: 'Reservas hoy', value: '3', icon: <CalendarDays className="h-4 w-4" />, color: 'text-purple-500' },
             ].map((s) => (
-              <div key={s.label} className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-3">
+              <div key={s.label} className="rounded-lg bg-slate-50 p-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] text-slate-500">{s.label}</span>
                   <span className={s.color}>{s.icon}</span>
                 </div>
-                <p className="mt-1 text-lg font-bold text-slate-900 dark:text-white">{s.value}</p>
+                <p className="mt-1 text-lg font-bold text-slate-900">{s.value}</p>
               </div>
             ))}
           </div>
           {/* Chart placeholder */}
-          <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-4">
+          <div className="rounded-lg bg-slate-50 p-4">
             <p className="text-xs font-medium text-slate-500 mb-3">Ventas de la semana</p>
             <div className="flex items-end gap-2 h-24">
               {[40, 55, 38, 62, 75, 90, 68].map((h, i) => (
@@ -169,21 +166,21 @@ function DashboardMockup() {
             </div>
           </div>
           {/* Recent orders */}
-          <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-4">
+          <div className="rounded-lg bg-slate-50 p-4">
             <p className="text-xs font-medium text-slate-500 mb-2">Últimas órdenes</p>
             <div className="space-y-2">
               {[
-                { id: 'ORD-001', mesa: 'Mesa 2', total: 'S/ 132.16', estado: 'Pendiente', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-                { id: 'ORD-002', mesa: 'Mesa 6', total: 'S/ 142.78', estado: 'En preparación', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-                { id: 'ORD-004', mesa: 'Para llevar', total: 'S/ 82.60', estado: 'Lista', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+                { id: 'ORD-001', mesa: 'Mesa 2', total: 'S/ 132.16', estado: 'Pendiente', color: 'bg-amber-100 text-amber-700' },
+                { id: 'ORD-002', mesa: 'Mesa 6', total: 'S/ 142.78', estado: 'En preparación', color: 'bg-blue-100 text-blue-700' },
+                { id: 'ORD-004', mesa: 'Para llevar', total: 'S/ 82.60', estado: 'Lista', color: 'bg-emerald-100 text-emerald-700' },
               ].map((o) => (
                 <div key={o.id} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-3">
-                    <span className="font-mono font-medium text-slate-700 dark:text-slate-300">{o.id}</span>
+                    <span className="font-mono font-medium text-slate-700">{o.id}</span>
                     <span className="text-slate-500">{o.mesa}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="font-semibold text-slate-700 dark:text-slate-300">{o.total}</span>
+                    <span className="font-semibold text-slate-700">{o.total}</span>
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${o.color}`}>
                       {o.estado}
                     </span>
@@ -207,21 +204,22 @@ export default function LandingPage() {
   const stat4 = useCountUp(24, 1000);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950">
+    <div className="min-h-screen bg-white">
       {/* Navbar */}
-      <nav className="fixed top-0 z-50 w-full border-b border-slate-200/50 bg-white/80 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/80">
+      <nav className="fixed top-0 z-50 w-full border-b border-slate-200/50 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 text-white font-bold text-sm shadow-lg shadow-teal-500/25">
               RF
             </div>
-            <span className="text-lg font-bold text-slate-900 dark:text-white">RestauFlow</span>
+            <span className="text-lg font-bold text-slate-900">RestauFlow</span>
           </div>
           <div className="hidden items-center gap-8 md:flex">
-            <a href="#features" className="text-sm text-slate-600 hover:text-teal-600 transition-colors dark:text-slate-400">Características</a>
-            <a href="#demo" className="text-sm text-slate-600 hover:text-teal-600 transition-colors dark:text-slate-400">Demo</a>
-            <a href="#testimonials" className="text-sm text-slate-600 hover:text-teal-600 transition-colors dark:text-slate-400">Testimonios</a>
-            <a href="#pricing" className="text-sm text-slate-600 hover:text-teal-600 transition-colors dark:text-slate-400">Precios</a>
+            <a href="#features" className="text-sm text-slate-600 hover:text-teal-600 transition-colors">CaracterÃ­sticas</a>
+              <a href="#features" className="text-sm text-slate-600 hover:text-teal-600 transition-colors">Características</a>
+            <a href="#demo" className="text-sm text-slate-600 hover:text-teal-600 transition-colors">Demo</a>
+            <a href="#testimonials" className="text-sm text-slate-600 hover:text-teal-600 transition-colors">Testimonios</a>
+            <a href="#pricing" className="text-sm text-slate-600 hover:text-teal-600 transition-colors">Precios</a>
           </div>
           <div className="flex items-center gap-3">
             <Link to="/login">
@@ -243,12 +241,12 @@ export default function LandingPage() {
         </div>
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-4 py-1.5 text-sm text-teal-700 mb-8 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 animate-[fadeIn_0.5s_ease-out]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-4 py-1.5 text-sm text-teal-700 mb-8 animate-[fadeIn_0.5s_ease-out]">
             <Sparkles className="h-4 w-4" />
             Plataforma SaaS Multi-Tenant para Restaurantes
           </div>
 
-          <h1 className="mx-auto max-w-4xl text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl dark:text-white leading-[1.1]">
+          <h1 className="mx-auto max-w-4xl text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl leading-[1.1]">
             El sistema que tu restaurante{' '}
             <span className="relative">
               <span className="bg-gradient-to-r from-teal-600 via-emerald-500 to-cyan-500 bg-clip-text text-transparent">
@@ -258,10 +256,10 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p className="mx-auto mt-8 max-w-2xl text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-            Menú, órdenes, cocina, mesas, caja, reservas, delivery y reportes —
+          <p className="mx-auto mt-8 max-w-2xl text-lg text-slate-600 leading-relaxed">
+            Menú, órdenes, cocina, mesas, caja, reservas, delivery y reportes -
             todo integrado en una plataforma cloud segura y escalable.
-            <span className="font-medium text-slate-900 dark:text-slate-200"> Empieza en minutos.</span>
+            <span className="font-medium text-slate-900"> Empieza en minutos.</span>
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
@@ -300,14 +298,14 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="py-24 bg-slate-50 dark:bg-slate-900/50">
+      <section id="features" className="py-24 bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-teal-600 uppercase tracking-wider">Características</span>
-            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
               Todo lo que necesitas, nada que te sobre
             </h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+            <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
               8 módulos profesionales diseñados específicamente para la operación gastronómica
             </p>
           </div>
@@ -316,15 +314,15 @@ export default function LandingPage() {
             {features.map((f, i) => (
               <div
                 key={f.title}
-                className="group relative rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-300 hover:border-transparent hover:shadow-xl dark:border-slate-700 dark:bg-slate-800 dark:hover:border-transparent overflow-hidden"
+                className="group relative rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-300 hover:border-transparent hover:shadow-xl overflow-hidden"
                 style={{ animationDelay: `${i * 0.1}s` }}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${f.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
                 <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${f.color} text-white shadow-lg transition-transform group-hover:scale-110 group-hover:-rotate-3`}>
                   {f.icon}
                 </div>
-                <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-white">{f.title}</h3>
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                <h3 className="mt-4 text-lg font-semibold text-slate-900">{f.title}</h3>
+                <p className="mt-2 text-sm text-slate-500 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -336,10 +334,10 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-teal-600 uppercase tracking-wider">Vista previa</span>
-            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
               Dashboard diseñado para la acción
             </h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+            <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
               Información en tiempo real para tomar decisiones al instante
             </p>
           </div>
@@ -361,38 +359,38 @@ export default function LandingPage() {
       </section>
 
       {/* Why RestauFlow */}
-      <section className="py-24 bg-slate-50 dark:bg-slate-900/50">
+      <section className="py-24 bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="grid gap-16 lg:grid-cols-2 items-center">
             <div>
               <span className="text-sm font-semibold text-teal-600 uppercase tracking-wider">Ventajas</span>
-              <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
+              <h2 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
                 ¿Por qué elegir <span className="text-teal-600">RestauFlow</span>?
               </h2>
-              <p className="mt-4 text-slate-600 dark:text-slate-400 leading-relaxed">
+              <p className="mt-4 text-slate-600 leading-relaxed">
                 Construido con tecnología moderna y las mejores prácticas de la industria. Diseñado para escalar con tu negocio.
               </p>
               <div className="mt-10 space-y-6">
                 {[
-                  { icon: <Shield className="h-5 w-5" />, title: 'Multi-Tenant Seguro', desc: 'Row Level Security en PostgreSQL. Cada restaurante accede solo a sus datos, garantizado a nivel de base de datos.', color: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' },
-                  { icon: <Zap className="h-5 w-5" />, title: 'Tiempo Real con WebSocket', desc: 'Cocina, órdenes y notificaciones se actualizan al instante. Sin refrescar la página.', color: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' },
-                  { icon: <Globe className="h-5 w-5" />, title: 'Cloud-Native & Escalable', desc: 'Go + React + PostgreSQL + Redis. Arquitectura diseñada para alta disponibilidad.', color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' },
-                  { icon: <Clock className="h-5 w-5" />, title: 'Operativo en Minutos', desc: 'Crea tu cuenta, configura tu menú y comienza a recibir pedidos. Sin instalaciones.', color: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' },
+                  { icon: <Shield className="h-5 w-5" />, title: 'Multi-Tenant Seguro', desc: 'Row Level Security en PostgreSQL. Cada restaurante accede solo a sus datos, garantizado a nivel de base de datos.', color: 'bg-blue-50 text-blue-600' },
+                  { icon: <Zap className="h-5 w-5" />, title: 'Tiempo Real con WebSocket', desc: 'Cocina, órdenes y notificaciones se actualizan al instante. Sin refrescar la página.', color: 'bg-amber-50 text-amber-600' },
+                  { icon: <Globe className="h-5 w-5" />, title: 'Cloud-Native & Escalable', desc: 'Go + React + PostgreSQL + Redis. Arquitectura diseñada para alta disponibilidad.', color: 'bg-emerald-50 text-emerald-600' },
+                  { icon: <Clock className="h-5 w-5" />, title: 'Operativo en Minutos', desc: 'Crea tu cuenta, configura tu menú y comienza a recibir pedidos. Sin instalaciones.', color: 'bg-purple-50 text-purple-600' },
                 ].map((item) => (
                   <div key={item.title} className="flex gap-4">
                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${item.color}`}>
                       {item.icon}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 dark:text-white">{item.title}</h4>
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
+                      <h4 className="font-semibold text-slate-900">{item.title}</h4>
+                      <p className="mt-1 text-sm text-slate-500 leading-relaxed">{item.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
             <div className="relative">
-              <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-teal-50 via-white to-emerald-50 p-8 dark:border-slate-700 dark:from-teal-900/10 dark:via-slate-800 dark:to-emerald-900/10">
+              <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-teal-50 via-white to-emerald-50 p-8">
                 <div className="space-y-4">
                   {[
                     { text: 'Dashboard en tiempo real', sub: 'Ventas, órdenes y métricas al instante' },
@@ -401,10 +399,10 @@ export default function LandingPage() {
                     { text: 'Cierre de caja automático', sub: 'Cuadre y reportes por turno' },
                     { text: 'Modo demo incluido', sub: 'Prueba sin configurar nada' },
                   ].map((item, i) => (
-                    <div key={i} className="flex items-start gap-3 rounded-xl bg-white/80 px-4 py-3.5 shadow-sm dark:bg-slate-800/80">
+                    <div key={i} className="flex items-start gap-3 rounded-xl bg-white/80 px-4 py-3.5 shadow-sm">
                       <CheckCircle2 className="h-5 w-5 text-emerald-500 mt-0.5 shrink-0" />
                       <div>
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.text}</span>
+                        <span className="text-sm font-medium text-slate-700">{item.text}</span>
                         <p className="text-xs text-slate-400 mt-0.5">{item.sub}</p>
                       </div>
                     </div>
@@ -418,12 +416,12 @@ export default function LandingPage() {
       </section>
 
       {/* Tech Stack */}
-      <section className="py-16 border-y border-slate-100 dark:border-slate-800">
+      <section className="py-16 border-y border-slate-100">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <p className="text-center text-sm font-medium text-slate-400 mb-8 uppercase tracking-wider">Construido con tecnología moderna</p>
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
             {['React 19', 'TypeScript', 'Go 1.23', 'PostgreSQL', 'Redis', 'Docker', 'Tailwind CSS', 'WebSocket', 'JWT Auth', 'Vite'].map((tech) => (
-              <span key={tech} className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors cursor-default">
+              <span key={tech} className="text-sm font-medium text-slate-500 hover:text-teal-600 transition-colors cursor-default">
                 {tech}
               </span>
             ))}
@@ -436,7 +434,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-teal-600 uppercase tracking-wider">Testimonios</span>
-            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
               Lo que dicen nuestros clientes
             </h2>
           </div>
@@ -445,15 +443,15 @@ export default function LandingPage() {
             {testimonials.map((t) => (
               <div
                 key={t.name}
-                className="relative rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800 hover:shadow-lg transition-shadow"
+                className="relative rounded-2xl border border-slate-200 bg-white p-6 hover:shadow-lg transition-shadow"
               >
-                <Quote className="absolute top-4 right-4 h-8 w-8 text-slate-100 dark:text-slate-700" />
+                <Quote className="absolute top-4 right-4 h-8 w-8 text-slate-100" />
                 <div className="flex gap-0.5 mb-4">
                   {Array.from({ length: t.stars }).map((_, i) => (
                     <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed relative z-10">
+                <p className="text-sm text-slate-600 leading-relaxed relative z-10">
                   "{t.text}"
                 </p>
                 <div className="mt-6 flex items-center gap-3">
@@ -461,7 +459,7 @@ export default function LandingPage() {
                     {t.avatar}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{t.name}</p>
+                    <p className="text-sm font-semibold text-slate-900">{t.name}</p>
                     <p className="text-xs text-slate-500">{t.role}</p>
                   </div>
                 </div>
@@ -472,14 +470,14 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-24 bg-slate-50 dark:bg-slate-900/50">
+      <section id="pricing" className="py-24 bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-teal-600 uppercase tracking-wider">Precios</span>
-            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
               Planes para cada tamaño
             </h2>
-            <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
+            <p className="mt-4 text-lg text-slate-600">
               Comienza gratis por 14 días. Sin tarjeta de crédito.
             </p>
           </div>
@@ -490,8 +488,8 @@ export default function LandingPage() {
                 key={plan.name}
                 className={`relative rounded-2xl border p-8 transition-all duration-300 hover:shadow-lg ${
                   plan.popular
-                    ? 'border-teal-500 bg-white shadow-xl shadow-teal-100/50 dark:bg-slate-800 dark:shadow-teal-900/20 scale-105'
-                    : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800'
+                    ? 'border-teal-500 bg-white shadow-xl shadow-teal-100/50 scale-105'
+                    : 'border-slate-200 bg-white'
                 }`}
               >
                 {plan.popular && (
@@ -501,15 +499,15 @@ export default function LandingPage() {
                     </span>
                   </div>
                 )}
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{plan.name}</h3>
+                <h3 className="text-lg font-bold text-slate-900">{plan.name}</h3>
                 <p className="mt-1 text-sm text-slate-500">{plan.desc}</p>
                 <div className="mt-6">
-                  <span className="text-4xl font-extrabold text-slate-900 dark:text-white">{plan.price}</span>
+                  <span className="text-4xl font-extrabold text-slate-900">{plan.price}</span>
                   <span className="text-sm text-slate-500"> /mes</span>
                 </div>
                 <ul className="mt-8 space-y-3">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <li key={f} className="flex items-center gap-2 text-sm text-slate-600">
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-500" />
                       {f}
                     </li>
@@ -534,11 +532,11 @@ export default function LandingPage() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
           <div className="text-center mb-12">
             <span className="text-sm font-semibold text-teal-600 uppercase tracking-wider">FAQ</span>
-            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
               Preguntas frecuentes
             </h2>
           </div>
-          <div className="divide-y divide-slate-200 dark:divide-slate-700 border-t border-slate-200 dark:border-slate-700">
+          <div className="divide-y divide-slate-200 border-t border-slate-200">
             {faqs.map((f) => <FAQ key={f.q} q={f.q} a={f.a} />)}
           </div>
         </div>
@@ -575,7 +573,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 py-16 dark:border-slate-800">
+      <footer className="border-t border-slate-200 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 mb-12">
             <div>
@@ -583,14 +581,14 @@ export default function LandingPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 text-white font-bold text-xs">
                   RF
                 </div>
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">RestauFlow</span>
+                <span className="text-sm font-semibold text-slate-700">RestauFlow</span>
               </div>
               <p className="text-sm text-slate-500 leading-relaxed">
                 La plataforma SaaS líder para la gestión integral de restaurantes en Latinoamérica.
               </p>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Producto</h4>
+              <h4 className="text-sm font-semibold text-slate-900 mb-4">Producto</h4>
               <ul className="space-y-2">
                 {['Características', 'Precios', 'Demo en vivo', 'Integraciones'].map((l) => (
                   <li key={l}><a href="#" className="text-sm text-slate-500 hover:text-teal-600 transition-colors">{l}</a></li>
@@ -598,7 +596,7 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Empresa</h4>
+              <h4 className="text-sm font-semibold text-slate-900 mb-4">Empresa</h4>
               <ul className="space-y-2">
                 {['Sobre nosotros', 'Blog', 'Contacto', 'Trabaja con nosotros'].map((l) => (
                   <li key={l}><a href="#" className="text-sm text-slate-500 hover:text-teal-600 transition-colors">{l}</a></li>
@@ -606,7 +604,7 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Legal</h4>
+              <h4 className="text-sm font-semibold text-slate-900 mb-4">Legal</h4>
               <ul className="space-y-2">
                 {['Términos de servicio', 'Política de privacidad', 'Cookies', 'SLA'].map((l) => (
                   <li key={l}><a href="#" className="text-sm text-slate-500 hover:text-teal-600 transition-colors">{l}</a></li>
@@ -614,7 +612,7 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-slate-200 dark:border-slate-800 pt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <div className="border-t border-slate-200 pt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
             <p className="text-sm text-slate-500">
               © {new Date().getFullYear()} RestauFlow. Todos los derechos reservados.
             </p>
@@ -627,3 +625,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

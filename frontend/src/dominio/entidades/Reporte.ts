@@ -20,20 +20,24 @@ export interface ResumenDiario {
 export interface DashboardResumen {
   ventas_hoy: number;
   ventas_ayer: number;
-  ordenes_totales: number;
-  ordenes_activas: number;
-  ordenes_hoy?: number;
-  clientes_hoy?: number;
+  crecimiento_porc: number;
+  ordenes_hoy: number;
   ticket_promedio: number;
+  ordenes_activas: number;
   mesas_ocupadas: number;
   total_mesas: number;
+  ocupacion_porc: number;
   reservas_hoy: number;
+  clientes_hoy: number;
+  ventas_semana: number;
+  ventas_mes: number;
   productos_mas_vendidos: { producto_id: number; nombre: string; cantidad: number; total: number }[];
-  ventas_por_hora: { hora: number; total: number }[];
-  ventas_semana?: { fecha: string; total: number }[];
-  ventas_tendencia?: { fecha: string; total: number }[];
-  top_productos?: { nombre: string; cantidad: number; total: number }[];
-  metodos_pago?: { metodo: string; total: number; porcentaje: number }[];
+  ventas_por_hora: { hora: number; total: number; cantidad: number }[];
+  ventas_por_categoria: { categoria_id: number; nombre: string; total: number; cantidad: number }[];
+  ventas_por_dia: { fecha: string; total: number; ordenes: number }[];
+  ordenes_mesa: number;
+  ordenes_delivery: number;
+  ordenes_para_llevar: number;
 }
 
 export interface AuditLog {

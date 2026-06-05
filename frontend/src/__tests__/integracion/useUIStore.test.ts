@@ -6,11 +6,11 @@ import { useUIStore } from '@/infraestructura/store/useUIStore';
 // Integration tests: useUIStore
 // ═══════════════════════════════════════════════════════════
 
-const INITIAL: Parameters<typeof useUIStore.setState>[0] = {
-  sidebarOpen: false,
-  sidebarCollapsed: false,
-  localSeleccionadoId: null,
-  theme: 'light',
+const INITIAL = {
+  sidebarOpen: false as const,
+  sidebarCollapsed: false as const,
+  localSeleccionadoId: null as null,
+  theme: 'light' as const,
 };
 
 beforeEach(() => {

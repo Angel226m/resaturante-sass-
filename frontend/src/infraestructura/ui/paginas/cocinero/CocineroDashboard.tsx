@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ChefHat, Clock, CheckCircle2, Flame, Timer, UtensilsCrossed,
@@ -110,19 +110,19 @@ export default function CocineroDashboard() {
   return (
     <div className="space-y-5">
       {/* ══════ Header ══════ */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-6">
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-600/10 via-transparent to-orange-600/10" />
-        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-amber-500/10 blur-3xl" />
+      <div className="relative overflow-hidden rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-6 shadow-sm">
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-200/20 via-transparent to-orange-200/20" />
+        <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-amber-200/40 blur-3xl" />
         <div className="relative flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-xl shadow-amber-500/25">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-300/40">
               <ChefHat className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">{greet()}, Chef {usuario?.nombre || 'Cocinero'}</h1>
-              <p className="text-sm text-slate-400 flex items-center gap-2">
+              <h1 className="text-xl font-bold text-slate-900">{greet()}, Chef {usuario?.nombre || 'Cocinero'}</h1>
+              <p className="text-sm text-slate-600 flex items-center gap-2">
                 Panel de Cocina — KDS
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-bold text-amber-400">
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
                   <Zap className="h-3 w-3" /> {totalActivos} activas
                 </span>
               </p>
@@ -134,8 +134,8 @@ export default function CocineroDashboard() {
             <button
               onClick={() => setShowSoldOutPanel(!showSoldOutPanel)}
               className={`relative flex items-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-sm transition-all ${agotados.length > 0
-                ? 'bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30'
-                : 'bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10'}`}
+                ? 'bg-red-100 text-red-700 border border-red-200 hover:bg-red-200/70'
+                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}
             >
               <Ban className="h-4 w-4" /> {agotados.length} Agotados
               {agotados.length > 0 && (
@@ -143,11 +143,11 @@ export default function CocineroDashboard() {
               )}
             </button>
             {/* View toggle */}
-            <div className="flex rounded-xl overflow-hidden border border-white/10">
-              <button onClick={() => setViewMode('orders')} className={`px-4 py-2.5 text-sm font-semibold transition-all ${viewMode === 'orders' ? 'bg-amber-500 text-white' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}>
+            <div className="flex rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+              <button onClick={() => setViewMode('orders')} className={`px-4 py-2.5 text-sm font-semibold transition-all ${viewMode === 'orders' ? 'bg-amber-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
                 <Eye className="h-4 w-4 inline mr-1.5" />Órdenes
               </button>
-              <button onClick={() => setViewMode('dishes')} className={`px-4 py-2.5 text-sm font-semibold transition-all ${viewMode === 'dishes' ? 'bg-amber-500 text-white' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}>
+              <button onClick={() => setViewMode('dishes')} className={`px-4 py-2.5 text-sm font-semibold transition-all ${viewMode === 'dishes' ? 'bg-amber-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
                 <Package className="h-4 w-4 inline mr-1.5" />Platos
               </button>
             </div>
@@ -157,21 +157,21 @@ export default function CocineroDashboard() {
 
       {/* ══════ Sold-out panel ══════ */}
       {showSoldOutPanel && (
-        <div className="rounded-2xl border-2 border-red-200 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/10 dark:to-rose-900/10 dark:border-red-800">
+        <div className="rounded-2xl border-2 border-red-200 bg-gradient-to-br from-red-50 to-rose-50">
           <div className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <Ban className="h-5 w-5 text-red-500" /> Gestión de Disponibilidad
               </h3>
-              <button onClick={() => setShowSoldOutPanel(false)} className="rounded-lg p-1.5 hover:bg-red-100 text-slate-400 hover:text-red-500 transition-colors dark:hover:bg-red-900/30">
+              <button onClick={() => setShowSoldOutPanel(false)} className="rounded-lg p-1.5 hover:bg-red-100 text-slate-400 hover:text-red-500 transition-colors">
                 <EyeOff className="h-4 w-4" />
               </button>
             </div>
             {productos.length === 0 ? <p className="text-sm text-slate-500">No hay productos cargados</p> : (
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {productos.map((p: ProductoMenu) => (
-                  <div key={p.id} className={`flex items-center justify-between rounded-xl border-2 p-3 transition-all ${!p.disponible ? 'border-red-300 bg-red-100/50 dark:border-red-700 dark:bg-red-950/30' : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800'}`}>
-                    <p className={`text-sm font-semibold truncate flex-1 min-w-0 ${!p.disponible ? 'text-red-700 line-through dark:text-red-400' : 'text-slate-900 dark:text-white'}`}>{p.nombre}</p>
+                  <div key={p.id} className={`flex items-center justify-between rounded-xl border-2 p-3 transition-all ${!p.disponible ? 'border-red-300 bg-red-100/50' : 'border-slate-200 bg-white'}`}>
+                    <p className={`text-sm font-semibold truncate flex-1 min-w-0 ${!p.disponible ? 'text-red-700 line-through' : 'text-slate-900'}`}>{p.nombre}</p>
                     <button
                       onClick={() => toggleDisp.mutate({ id: String(p.id), disponible: !p.disponible })}
                       className={`ml-2 shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${!p.disponible
@@ -193,12 +193,12 @@ export default function CocineroDashboard() {
         {cols.map(({ estado, orders }) => {
           const cfg = columnConfig[estado];
           return (
-            <div key={estado} className={`rounded-2xl bg-gradient-to-br ${cfg.gradient} border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4`}>
-              <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${estado === 'pendiente' ? 'bg-amber-100 dark:bg-amber-900/30' : estado === 'en_preparacion' ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-emerald-100 dark:bg-emerald-900/30'} ${cfg.color}`}>
+            <div key={estado} className={`rounded-2xl bg-gradient-to-br ${cfg.gradient} border border-slate-200 p-4 flex items-center gap-4`}>
+              <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${estado === 'pendiente' ? 'bg-amber-100' : estado === 'en_preparacion' ? 'bg-orange-100' : 'bg-emerald-100'} ${cfg.color}`}>
                 {cfg.icon}
               </div>
               <div>
-                <p className="text-3xl font-black text-slate-900 dark:text-white">{orders.length}</p>
+                <p className="text-3xl font-black text-slate-900">{orders.length}</p>
                 <p className="text-xs font-medium text-slate-500">{cfg.title}</p>
               </div>
             </div>
@@ -222,10 +222,10 @@ export default function CocineroDashboard() {
           return (
             <div key={estado} className="space-y-3">
               {/* Column header */}
-              <div className={`flex items-center justify-between rounded-xl bg-gradient-to-r ${cfg.gradient} border border-slate-200 dark:border-slate-700 px-4 py-3`}>
+              <div className={`flex items-center justify-between rounded-xl bg-gradient-to-r ${cfg.gradient} border border-slate-200 px-4 py-3`}>
                 <div className="flex items-center gap-2.5">
                   <span className={cfg.color}>{cfg.icon}</span>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-base">{cfg.title}</h3>
+                  <h3 className="font-bold text-slate-900 text-base">{cfg.title}</h3>
                 </div>
                 <Badge variant={cfg.badgeVariant}>{orders.length}</Badge>
               </div>
@@ -233,8 +233,8 @@ export default function CocineroDashboard() {
               {/* ── Orders view ── */}
               {viewMode === 'orders' && (
                 orders.length === 0 ? (
-                  <div className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 p-8 text-center">
-                    <UtensilsCrossed className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                  <div className="rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center">
+                    <UtensilsCrossed className="h-8 w-8 text-slate-300 mx-auto mb-2" />
                     <p className="text-sm text-slate-400 font-medium">Sin {cfg.title.toLowerCase()}</p>
                   </div>
                 ) : (
@@ -245,20 +245,20 @@ export default function CocineroDashboard() {
                       return (
                         <div
                           key={orden.id}
-                          className={`rounded-2xl border-l-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all ${cfg.cardAccent} ${urgent ? 'ring-2 ring-red-400/50 animate-pulse' : ''}`}
+                          className={`rounded-2xl border-l-4 bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all ${cfg.cardAccent} ${urgent ? 'ring-2 ring-red-400/50 animate-pulse' : ''}`}
                         >
                           <div className="p-4">
                             {/* Order header */}
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center gap-2.5">
-                                <span className="text-xl font-black text-slate-900 dark:text-white">#{orden.numero_orden}</span>
+                                <span className="text-xl font-black text-slate-900">#{orden.numero_orden}</span>
                                 {urgent && (
-                                  <span className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                                  <span className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600">
                                     <AlertTriangle className="h-3 w-3" /> URGENTE
                                   </span>
                                 )}
                               </div>
-                              <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${mins > 10 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : mins > 5 ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`}>
+                              <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${mins > 10 ? 'bg-red-100 text-red-600' : mins > 5 ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'}`}>
                                 <Timer className="h-3 w-3" /> {mins}m
                               </div>
                             </div>
@@ -269,7 +269,7 @@ export default function CocineroDashboard() {
                                 {orden.tipo_orden === 'mesa' ? `🪑 Mesa ${orden.mesa_id || ''}` : orden.tipo_orden === 'para_llevar' ? '📦 Para llevar' : '🛵 Delivery'}
                               </Badge>
                               {orden.notas && (
-                                <span className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-2 py-0.5 italic truncate max-w-[160px]">
+                                <span className="text-[11px] text-amber-600 bg-amber-50 rounded-lg px-2 py-0.5 italic truncate max-w-[160px]">
                                   {orden.notas}
                                 </span>
                               )}
@@ -278,10 +278,10 @@ export default function CocineroDashboard() {
                             {/* Items list */}
                             <div className="space-y-1 mb-4">
                               {(orden.items || []).map((item: ItemOrden, i: number) => (
-                                <div key={i} className="flex items-start justify-between rounded-xl bg-slate-50 dark:bg-slate-900/50 px-3 py-2">
+                                <div key={i} className="flex items-start justify-between rounded-xl bg-slate-50 px-3 py-2">
                                   <div className="flex-1">
-                                    <p className="text-sm text-slate-800 dark:text-slate-200">
-                                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-slate-200 dark:bg-slate-700 text-[10px] font-black text-slate-900 dark:text-white mr-1.5">{item.cantidad}</span>
+                                    <p className="text-sm text-slate-800">
+                                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-slate-200 text-[10px] font-black text-slate-900 mr-1.5">{item.cantidad}</span>
                                       <span className="font-semibold">{item.nombre_producto || `Producto #${item.producto_menu_id}`}</span>
                                     </p>
                                     {item.notas && (
@@ -315,8 +315,8 @@ export default function CocineroDashboard() {
               {/* ── Dishes (grouped) view ── */}
               {viewMode === 'dishes' && (
                 dishes.length === 0 ? (
-                  <div className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 p-8 text-center">
-                    <Package className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                  <div className="rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center">
+                    <Package className="h-8 w-8 text-slate-300 mx-auto mb-2" />
                     <p className="text-sm text-slate-400 font-medium">Sin platos</p>
                   </div>
                 ) : (
@@ -325,15 +325,15 @@ export default function CocineroDashboard() {
                       const oldest = Math.max(...g.ordenes.map(o => getMinutesAgo(o.creado_en)));
                       const urgent = estado === 'pendiente' && oldest > 10;
                       return (
-                        <div key={g.nombre} className={`rounded-2xl border-l-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm ${cfg.cardAccent} ${urgent ? 'ring-2 ring-red-400/50' : ''}`}>
+                        <div key={g.nombre} className={`rounded-2xl border-l-4 bg-white border border-slate-200 shadow-sm ${cfg.cardAccent} ${urgent ? 'ring-2 ring-red-400/50' : ''}`}>
                           <div className="p-4">
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center gap-3">
-                                <span className={`flex h-10 w-10 items-center justify-center rounded-xl font-black text-lg ${estado === 'pendiente' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : estado === 'en_preparacion' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'}`}>
+                                <span className={`flex h-10 w-10 items-center justify-center rounded-xl font-black text-lg ${estado === 'pendiente' ? 'bg-amber-100 text-amber-700' : estado === 'en_preparacion' ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700'}`}>
                                   {g.cantidad_total}
                                 </span>
                                 <div>
-                                  <h4 className="font-bold text-slate-900 dark:text-white text-base">{g.nombre}</h4>
+                                  <h4 className="font-bold text-slate-900 text-base">{g.nombre}</h4>
                                   <p className="text-[11px] text-slate-500">{g.ordenes.length} órdenes</p>
                                 </div>
                               </div>
@@ -341,9 +341,9 @@ export default function CocineroDashboard() {
                             </div>
                             <div className="space-y-1 mb-3">
                               {g.ordenes.map((o, i) => (
-                                <div key={i} className="flex items-center justify-between text-xs rounded-xl bg-slate-50 dark:bg-slate-900/50 px-3 py-2">
-                                  <span className="text-slate-600 dark:text-slate-400">
-                                    <span className="font-bold text-slate-900 dark:text-white">#{o.numero_orden}</span> — {o.cantidad}x
+                                <div key={i} className="flex items-center justify-between text-xs rounded-xl bg-slate-50 px-3 py-2">
+                                  <span className="text-slate-600">
+                                    <span className="font-bold text-slate-900">#{o.numero_orden}</span> — {o.cantidad}x
                                   </span>
                                   <div className="flex items-center gap-2">
                                     {o.notas && <span className="text-amber-500 italic text-[10px]">⚠️ {o.notas}</span>}
@@ -373,3 +373,4 @@ export default function CocineroDashboard() {
     </div>
   );
 }
+

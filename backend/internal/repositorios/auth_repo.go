@@ -34,8 +34,8 @@ func (r *AuthRepo) CrearUsuario(tenantID string, req auth.NuevoUsuarioRequest) (
 		INSERT INTO usuarios (tenant_id, local_id, correo, numero_celular,
 			nombre, apellidos, rol, contrasena, pin_acceso)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-		RETURNING id, tenant_id, local_id, correo, numero_celular, nombre, apellidos,
-			rol, pin_acceso, activo, deleted_at, ultimo_login, created_at, updated_at
+		RETURNING id, tenant_id, local_id, correo, COALESCE(numero_celular, ''), nombre, apellidos,
+			rol, COALESCE(pin_acceso, ''), activo, deleted_at, ultimo_login, created_at, updated_at
 	`,
 		tenantID, req.LocalID, req.Correo, req.NumeroCelular,
 		req.Nombre, req.Apellidos, req.Rol, hash, req.PinAcceso,
@@ -54,8 +54,8 @@ func (r *AuthRepo) ObtenerUsuarioPorCorreo(tenantID, correo string) (*auth.Usuar
 	var u auth.Usuario
 	var hash string
 	err := r.DB.QueryRow(`
-		SELECT id, tenant_id, local_id, correo, numero_celular, nombre, apellidos,
-			rol, pin_acceso, contrasena, activo, deleted_at, ultimo_login,
+		SELECT id, tenant_id, local_id, correo, COALESCE(numero_celular, ''), nombre, apellidos,
+			rol, COALESCE(pin_acceso, ''), contrasena, activo, deleted_at, ultimo_login,
 			created_at, updated_at
 		FROM usuarios
 		WHERE tenant_id = $1 AND correo = $2 AND deleted_at IS NULL
@@ -74,8 +74,8 @@ func (r *AuthRepo) ObtenerUsuarioPorCorreo(tenantID, correo string) (*auth.Usuar
 func (r *AuthRepo) ObtenerUsuarioPorID(tenantID string, id int64) (*auth.Usuario, error) {
 	var u auth.Usuario
 	err := r.DB.QueryRow(`
-		SELECT id, tenant_id, local_id, correo, numero_celular, nombre, apellidos,
-			rol, pin_acceso, activo, deleted_at, ultimo_login, created_at, updated_at
+		SELECT id, tenant_id, local_id, correo, COALESCE(numero_celular, ''), nombre, apellidos,
+			rol, COALESCE(pin_acceso, ''), activo, deleted_at, ultimo_login, created_at, updated_at
 		FROM usuarios
 		WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
 	`, id, tenantID).Scan(
@@ -109,8 +109,8 @@ func (r *AuthRepo) ListarUsuarios(tenantID string, localID int, pagina, porPagin
 	offset := (pagina - 1) * porPagina
 	args = append(args, porPagina, offset)
 	rows, err := r.DB.Query(fmt.Sprintf(`
-		SELECT id, tenant_id, local_id, correo, numero_celular, nombre, apellidos,
-			rol, pin_acceso, activo, deleted_at, ultimo_login, created_at, updated_at
+		SELECT id, tenant_id, local_id, correo, COALESCE(numero_celular, ''), nombre, apellidos,
+			rol, COALESCE(pin_acceso, ''), activo, deleted_at, ultimo_login, created_at, updated_at
 		FROM usuarios %s
 		ORDER BY created_at DESC LIMIT $%d OFFSET $%d
 	`, baseWhere, argIdx, argIdx+1), args...)
@@ -294,8 +294,8 @@ func (r *AuthRepo) MarcarTokenUsado(id int64) error {
 func (r *AuthRepo) ObtenerUsuarioPorPin(tenantID string, localID int, pin string) (*auth.Usuario, error) {
 	var u auth.Usuario
 	err := r.DB.QueryRow(`
-		SELECT id, tenant_id, local_id, correo, numero_celular, nombre, apellidos,
-			rol, pin_acceso, activo, deleted_at, ultimo_login, created_at, updated_at
+		SELECT id, tenant_id, local_id, correo, COALESCE(numero_celular, ''), nombre, apellidos,
+			rol, COALESCE(pin_acceso, ''), activo, deleted_at, ultimo_login, created_at, updated_at
 		FROM usuarios
 		WHERE tenant_id = $1 AND local_id = $2 AND pin_acceso = $3
 			AND deleted_at IS NULL AND activo = true

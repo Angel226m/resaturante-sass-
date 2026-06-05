@@ -200,7 +200,6 @@ func (r *ReportesRepo) GenerarResumenDiario(tenantID string, localID int, fecha 
 	return &res, nil
 }
 
-// ============ AUDIT LOG ============
 
 func (r *ReportesRepo) ListarAuditLog(tenantID string, filtros reportes.FiltrosAuditLog, pagina, porPagina int) ([]reportes.AuditLog, int, error) {
 	where := "tenant_id = $1"
@@ -428,6 +427,27 @@ func (r *ReportesRepo) ObtenerDashboard(tenantID string, localID int) (*reportes
 			var vc reportes.VentaPorCategoria
 			if err := cRows.Scan(&vc.CategoriaID, &vc.Nombre, &vc.Total, &vc.Cantidad); err == nil {
 				d.VentasPorCategoria = append(d.VentasPorCategoria, vc)
+			}
+		}
+	}
+
+	// Ventas por día (últimos 7 días, para gráfico semanal)
+	dRows, err := r.DB.Query(`
+		SELECT TO_CHAR(DATE(created_at), 'YYYY-MM-DD') AS fecha,
+		       COALESCE(SUM(total), 0), COUNT(*)
+		FROM ordenes
+		WHERE tenant_id = $1 AND local_id = $2
+		  AND created_at >= CURRENT_DATE - 6
+		  AND estado NOT IN ('cancelada')
+		GROUP BY DATE(created_at)
+		ORDER BY DATE(created_at)
+	`, tenantID, localID)
+	if err == nil {
+		defer dRows.Close()
+		for dRows.Next() {
+			var vd reportes.VentaPorDia
+			if err := dRows.Scan(&vd.Fecha, &vd.Total, &vd.Ordenes); err == nil {
+				d.VentasPorDia = append(d.VentasPorDia, vd)
 			}
 		}
 	}

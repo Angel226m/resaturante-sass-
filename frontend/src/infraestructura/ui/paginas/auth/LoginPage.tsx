@@ -1,11 +1,11 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
-  Eye, EyeOff, Mail, Lock, Building2, ChefHat, Shield,
-  UserCheck, Crown, Flame, ArrowRight, Utensils, BarChart3,
+  Eye, EyeOff, Mail, Lock, Building2,
+  Flame, Utensils, BarChart3,
   ClipboardList, CreditCard, Star,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -22,42 +22,6 @@ const loginSchema = z.object({
 });
 type LoginForm = z.infer<typeof loginSchema>;
 
-const DEMO_ACCOUNTS = [
-  {
-    role: 'Admin Restaurante',
-    icon: Shield,
-    gradient: 'from-teal-500 to-emerald-500',
-    shadow: 'shadow-teal-500/20',
-    accent: 'text-teal-600',
-    tenant_slug: 'demo-restaurant',
-    email: 'admin@demo.com',
-    password: 'admin123',
-    desc: 'Gestión total · Reportes · Configuración',
-  },
-  {
-    role: 'Mesero',
-    icon: UserCheck,
-    gradient: 'from-blue-500 to-indigo-500',
-    shadow: 'shadow-blue-500/20',
-    accent: 'text-blue-600',
-    tenant_slug: 'demo-restaurant',
-    email: 'mesero@demo.com',
-    password: 'mesero123',
-    desc: 'Mesas · Pedidos · Enviar a cocina',
-  },
-  {
-    role: 'Cocinero',
-    icon: ChefHat,
-    gradient: 'from-amber-500 to-orange-500',
-    shadow: 'shadow-amber-500/20',
-    accent: 'text-amber-600',
-    tenant_slug: 'demo-restaurant',
-    email: 'cocinero@demo.com',
-    password: 'cocinero123',
-    desc: 'KDS · Tickets · Preparación',
-  },
-];
-
 const FEATURES = [
   { icon: <Utensils className="h-5 w-5" />, label: 'Menú digital' },
   { icon: <ClipboardList className="h-5 w-5" />, label: 'Gestión de órdenes' },
@@ -68,8 +32,6 @@ const FEATURES = [
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [demoLoading, setDemoLoading] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
   const { login, loginSuperAdmin } = useAuthStore();
   const { setLocalSeleccionado } = useUIStore();
   const navigate = useNavigate();
@@ -77,36 +39,6 @@ export default function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   });
-
-  const loginDemo = async (acc: typeof DEMO_ACCOUNTS[0]) => {
-    setDemoLoading(acc.role);
-    try {
-      await login(acc.email, acc.password, acc.tenant_slug);
-      setLocalSeleccionado('demo-local-1');
-      toast.success(`¡Bienvenido, ${acc.role}!`);
-      const dest = acc.email.startsWith('mesero') ? '/mesero'
-        : acc.email.startsWith('cocinero') ? '/cocinero'
-        : '/dashboard';
-      navigate(dest);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.mensaje || 'Error al iniciar sesión');
-    } finally {
-      setDemoLoading(null);
-    }
-  };
-
-  const loginSuperAdminDemo = async () => {
-    setDemoLoading('superadmin');
-    try {
-      await loginSuperAdmin('superadmin@restauflow.com', 'superadmin123');
-      toast.success('¡Bienvenido, Super Admin!');
-      navigate('/superadmin');
-    } catch (err: any) {
-      toast.error(err?.response?.data?.mensaje || 'Error al iniciar sesión');
-    } finally {
-      setDemoLoading(null);
-    }
-  };
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
@@ -117,24 +49,34 @@ export default function LoginPage() {
         navigate('/superadmin');
       } else {
         await login(data.email, data.password, data.tenant_slug, data.remember_me ?? false);
-        setLocalSeleccionado('demo-local-1');
+        const usuario = useAuthStore.getState().usuario;
+        if (usuario?.local_id) {
+          setLocalSeleccionado(String(usuario.local_id));
+        }
         toast.success('¡Bienvenido!');
-        const rol = useAuthStore.getState().usuario?.rol;
+        const rol = usuario?.rol;
         const dest = rol === 'mesero' ? '/mesero' : rol === 'cocinero' ? '/cocinero' : '/dashboard';
         navigate(dest);
       }
     } catch (err: any) {
-      toast.error(err?.response?.data?.mensaje || 'Credenciales inválidas');
+      const msg = err?.response?.data?.mensaje;
+      if (msg) {
+        toast.error(msg);
+      } else if (err?.code === 'ERR_NETWORK') {
+        toast.error('Error de conexión - verifica que el backend esté corriendo');
+      } else if (err?.code === 'ECONNABORTED') {
+        toast.error('La solicitud tardó demasiado - intenta de nuevo');
+      } else {
+        toast.error('Credenciales inválidas');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
-      {/* ═══════════════════════════════════════════
-          LEFT PANEL — Hero decorative
-      ═══════════════════════════════════════════ */}
+    <div className="min-h-screen flex bg-slate-50">
+        {/* LEFT PANEL - Hero decorative */}
       <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
         {/* Multi-layer gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
@@ -201,9 +143,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════
-          RIGHT PANEL — Login form / Demo access
-      ═══════════════════════════════════════════ */}
+        {/* RIGHT PANEL - Login form / Demo access */}
       <div className="flex w-full items-center justify-center px-6 py-8 lg:w-[45%]">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
@@ -211,91 +151,20 @@ export default function LoginPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 text-white">
               <Flame className="h-5 w-5" />
             </div>
-            <span className="text-xl font-black text-slate-900 dark:text-white">RestauFlow</span>
+            <span className="text-xl font-black text-slate-900">RestauFlow</span>
           </div>
 
           {/* Title */}
           <div className="mb-8">
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white">
-              {showForm ? 'Iniciar sesión' : '¡Prueba la demo!'}
-            </h2>
-            <p className="mt-2 text-slate-500 text-sm leading-relaxed">
-              {showForm
-                ? 'Ingresa tus credenciales para acceder al sistema'
-                : 'Explora todas las funcionalidades sin crear una cuenta'}
-            </p>
+            <h2 className="text-2xl font-black text-slate-900">Iniciar sesión</h2>
+            <p className="mt-2 text-slate-500 text-sm leading-relaxed">Ingresa tus credenciales para acceder al sistema</p>
           </div>
 
-          {!showForm ? (
-            <>
-              {/* Demo accounts — primary CTA */}
-              <div className="space-y-3">
-                {DEMO_ACCOUNTS.map((acc) => {
-                  const Icon = acc.icon;
-                  const loading = demoLoading === acc.role;
-                  return (
-                    <button
-                      key={acc.role}
-                      type="button"
-                      disabled={!!demoLoading}
-                      onClick={() => loginDemo(acc)}
-                      className={`group flex items-center gap-4 w-full rounded-2xl bg-white border border-slate-200 px-5 py-4 text-left transition-all hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-wait dark:bg-slate-800 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600`}
-                    >
-                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${acc.gradient} text-white shadow-lg ${acc.shadow}`}>
-                        {loading
-                          ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                          : <Icon className="h-5 w-5" />
-                        }
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-base font-bold text-slate-900 dark:text-white">
-                          {loading ? 'Ingresando...' : acc.role}
-                        </p>
-                        <p className="text-xs text-slate-500 mt-0.5">{acc.desc}</p>
-                      </div>
-                      <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all dark:text-slate-600" />
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Super Admin */}
-              <button
-                type="button"
-                disabled={!!demoLoading}
-                onClick={loginSuperAdminDemo}
-                className="mt-3 flex items-center justify-center gap-2.5 w-full rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/50 px-5 py-3.5 text-sm font-semibold text-purple-700 transition-all hover:shadow-lg hover:bg-purple-50 hover:border-purple-300 dark:border-purple-800 dark:bg-purple-900/10 dark:text-purple-300 disabled:opacity-60 disabled:cursor-wait"
-              >
-                {demoLoading === 'superadmin'
-                  ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
-                  : <Crown className="h-4 w-4" />
-                }
-                {demoLoading === 'superadmin' ? 'Ingresando...' : 'Super Admin — Gestión SaaS'}
-              </button>
-
-              {/* Divider to manual login */}
-              <div className="mt-8 relative">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-slate-700" /></div>
-                <div className="relative flex justify-center">
-                  <span className="bg-slate-50 px-4 text-xs font-medium text-slate-400 uppercase tracking-wider dark:bg-slate-950">o</span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowForm(true)}
-                className="mt-6 w-full rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all hover:shadow-md hover:border-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600"
-              >
-                Iniciar sesión con credenciales
-              </button>
-            </>
-          ) : (
-            <>
-              {/* Login form */}
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Login form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <Input
                   label="Código de restaurante"
-                  placeholder="mi-restaurante"
+                  placeholder="la-buena-mesa o UUID"
                   leftIcon={<Building2 className="h-4 w-4" />}
                   error={errors.tenant_slug?.message}
                   {...register('tenant_slug')}
@@ -323,10 +192,10 @@ export default function LoginPage() {
                 />
 
                 <div className="flex items-center justify-between pt-1">
-                  <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer select-none">
+                  <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700"
+                      className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                       {...register('remember_me')}
                     />
                     Recordarme 7 días
@@ -339,17 +208,7 @@ export default function LoginPage() {
                 <Button type="submit" isLoading={isLoading} className="w-full !py-3 !rounded-xl !text-base">
                   Iniciar sesión
                 </Button>
-              </form>
-
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="mt-5 w-full text-center text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors"
-              >
-                ← Volver a cuentas demo
-              </button>
-            </>
-          )}
+          </form>
 
           {/* Footer */}
           <p className="mt-8 text-center text-sm text-slate-400">
@@ -363,3 +222,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
